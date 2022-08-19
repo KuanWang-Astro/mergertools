@@ -100,6 +100,9 @@ class SimulationBox:
                    'SubLink': 'tree_extended.{}.hdf5',
                    'Group': 'host_sub{}.npy'}
 
+        if catalog == 'Group':
+            catalog = 'GroupFirstSub'
+
         if self.dark:
             fpath = os.path.join(
                 self.basepath,
@@ -179,7 +182,7 @@ class SimulationBox:
                 keys = list(set(keys) - existing)
                 if len(keys) == 0:
                     return
-                
+
             for key in keys:
                 arr_dict[key] = np.array(f[key])
             f.close()
