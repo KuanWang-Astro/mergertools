@@ -100,22 +100,23 @@ class SimulationBox:
                    'SubLink': 'tree_extended.{}.hdf5',
                    'Group': 'host_sub{}.npy'}
 
-        if catalog == 'Group':
-            catalog = 'GroupFirstSub'
+        dir_dict = {'SubLinkOffsets': 'SubLinkOffsets',
+                   'SubLink': 'SubLink',
+                   'Group': 'GroupFirstSub'}
 
         if self.dark:
             fpath = os.path.join(
                 self.basepath,
                 'TNG{}-{}-Dark_{}'.format(str(self.Lbox),
                                           str(self.resolution),
-                                          catalog),
+                                          dir_dict[catalog]),
                 fn_dict[catalog].format(num))
         else:
             fpath = os.path.join(
                 self.basepath,
                 'TNG{}-{}_{}'.format(str(self.Lbox),
                                      str(self.resolution),
-                                     catalog),
+                                     dir_dict[catalog]),
                 fn_dict[catalog].format(num))
 
         if os.path.isfile(fpath):
