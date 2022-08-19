@@ -100,7 +100,7 @@ class SimulationBox:
                    'SubLink': 'tree_extended.{}.hdf5',
                    'Group': 'host_sub{}.npy'}
 
-        dir_dict = {'SubLinkOffsets': 'SubLinkOffsets',
+        dir_dict = {'SubLinkOffsets': 'Offsets',
                    'SubLink': 'SubLink',
                    'Group': 'GroupFirstSub'}
 
