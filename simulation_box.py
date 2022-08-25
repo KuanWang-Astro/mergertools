@@ -171,7 +171,7 @@ class SimulationBox:
 
         else:
             if catalog == 'SubLinkOffsets':
-                f = h5py.File(path, 'r')['Subhalo/SubLink']
+                f = h5py.File(path, 'r')
             elif catalog == 'SubLink':
                 f = h5py.File(path, 'r')
 
@@ -186,7 +186,6 @@ class SimulationBox:
 
             for key in keys:
                 arr_dict[key] = np.array(f[key])
-            f.close()
 
         if self.preloaded.__contains__(catalog + str(filenum)):
             self.preloaded[catalog + str(filenum)] = {
