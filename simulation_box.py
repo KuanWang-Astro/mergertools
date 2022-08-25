@@ -171,7 +171,7 @@ class SimulationBox:
 
         else:
             if catalog == 'SubLinkOffsets':
-                f = h5py.File(path, 'r')
+                f = h5py.File(path, 'r')['Subhalo/SubLink']
             elif catalog == 'SubLink':
                 f = h5py.File(path, 'r')
 
