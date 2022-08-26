@@ -1,5 +1,5 @@
 """
-Module with functions that locate subhalos convert between different ids.
+Module with functions that locate subhalos and convert between different ids.
 
 """
 
@@ -28,14 +28,17 @@ def subfind_central(groupnum, snapnum, sim):
     Returns
     -------
     central : int or array_like
-      The SubfindID(s) of primary subhalo(s) of the given groups. In same
-      format as the input groupnum. The SubfindID is only unique within
+      The SubfindID(s) of primary subhalo(s) of the given groups. Has same
+      shape as the input groupnum. The SubfindID is only unique within
       each snapshot and not throughout the history.
 
     """
 
     if not np.isscalar(snapnum):
         raise TypeError('The input snapnum should be one number.')
+
+    if isinstance(groupnum, tuple):
+        groupnum = np.array(groupnum)
 
     sim.load_data('Group', snapnum, keys = ['GroupFirstSub'])
     central = sim.preloaded['Group'
@@ -63,7 +66,7 @@ def sublink_id(subfindid, snapnum, sim):
     Returns
     -------
     subhaloid : int or array_like
-      The SubhaloID(s) of the given subhalos. In same format as the input
+      The SubhaloID(s) of the given subhalos. Has same shape as the input
       subfindid. SubhaloID is the SubLink index and is unique throughout all
       snapshots.
 
@@ -72,6 +75,9 @@ def sublink_id(subfindid, snapnum, sim):
     if not np.isscalar(snapnum):
         raise TypeError('The input snapnum should be one number.')
 
+    if isinstance(subfindid, tuple):
+        subfindid = np.array(subfindid)
+
     sim.load_data('SubLinkOffsets', snapnum, keys = ['SubhaloID'])
     subhaloid = sim.preloaded['SubLinkOffsets'
                               + str(snapnum)]['SubhaloID'][subfindid]
@@ -79,34 +85,104 @@ def sublink_id(subfindid, snapnum, sim):
     return subhaloid
 
 def chunk_num(subhaloid):
+    """ Identifies the chunk of the SubLink tree for given subhalo(s).
+
+    Parameters
+    ----------
+    subhaloid :  int or array_like
+      The SubhaloID(s) of the subhalos to locate. SubhaloID is the SubLink
+      index and is unique throughout all snapshots.
+
+    Returns
+    -------
+    chunknum : int or array_like
+      The chunk number of the given subhalos. Has same shape as the input
+      subhaloid.
+
+    samechunk : bool
+      True if all the given subhalos are in the same tree file chunk, False
+      otherwise.
+
+    """
+
     # doesn't depend on box
     if np.isscalar(subhaloid):
-        return subhaloid // int(1e16)
-    uniq = np.unique(np.array(subhaloid) // int(1e16))
-    if len(uniq) == 1:
-        return uniq[0]
-    return np.array(subhaloid) // int(1e16)
+        return subhaloid // int(1e16), True
 
-def row_in_chunk(subhaloid, tree_dict = None, **box_kwargs):
-    chunknum = chunk_num(subhaloid)
+    chunknum = np.array(subhaloid) // int(1e16)
+    samechunk = len(np.unique(chunknum)) == 1
+
+    return chunknum, samechunk
+
+def row_in_chunk(subhaloid, sim):
+    """ Locates subhalo(s) within a tree file chunk.
+
+    Parameters
+    ----------
+    subhaloid :  int or array_like
+      The SubhaloID(s) of the subhalos to locate. SubhaloID is the SubLink
+      index and is unique throughout all snapshots.
+
+    sim : class obj
+      Instance of the simulation_box.SimulationBox class, which specifies the
+      simulation box to work with.
+
+    Returns
+    -------
+    rownum : int or array_like
+      The row indices of the given subhalos in the tree chunk. Has same shape
+      as the input subhaloid.
+
+    chunknum : int
+      The chunk number of the given subhalos. Subhalos required to be in the
+      same chunk.
+
+    """
+    chunknum, samechunk = chunk_num(subhaloid)
+    if not samechunk:
+        raise Exception('The given subhalos are not in the same tree chunk,' +
+                        ' process subhalos in different chunks separately.')
     if not np.isscalar(chunknum):
-        raise Exception('Subhalos must be in the same tree chunk!')
-    if tree_dict is None:
-        tree_dict = load_data.load_data('SubLink', chunknum,
-                             keys = ['SubhaloID'],
-                             **box_kwargs)
-    return np.searchsorted(tree_dict['SubhaloID'], subhaloid)
+        chunknum = chunknum[0]
+    sim.load_data('SubLink', chunknum, keys = ['SubhaloID'])
+    rownum = np.searchsorted(sim.preloaded['SubLink' + str(chunknum)]\
+                                          ['SubhaloID'],
+                             subhaloid)
+
+    return rownum, chunknum
 
 
-def subfind_id(subhaloid, tree_dict = None, **box_kwargs):
+def subfind_id(subhaloid, sim):
+    """ Converts subhalo SubhaloID(s) to SubfindID(s) and SnapNum(s).
+    Processes any number of subhalos in the same tree chunk.
+
+    Parameters
+    ----------
+    subhaloid :  int or array_like
+      The SubhaloID(s) of the subhalos to convert. SubhaloID is the SubLink
+      index and is unique throughout all snapshots.
+
+    sim : class obj
+      Instance of the simulation_box.SimulationBox class, which specifies the
+      simulation box to work with.
+
+    Returns
+    -------
+    subfindid : int or array_like
+      The SubfindID(s) of the given subhalo(s). SubfindID is only unique
+      within each snapshot and not throughout the history. Has same shape
+      as the input subhaloid.
+
+    snapnum : int or array_like
+      The snapshot number(s) of the subhalo(s). Has same shape as the input
+      subhaloid.
+
     """
-    converts SubhaloID to SubfindID and SnapNum for subhalo(s)
-    1 subhaloid or multiple subhaloid in same tree chunk
-    """
-    # add check for needed columns
-    if tree_dict is None:
-        tree_dict = load_data.load_data('SubLink', Chunknum(subhaloid),
-                             keys = ['SubhaloID', 'SubfindID', 'SnapNum'],
-                             **box_kwargs)
-    idx = np.searchsorted(tree_dict['SubhaloID'], subhaloid)
-    return tree_dict['SubfindID'][idx], tree_dict['SnapNum'][idx]
+
+    rownum, chunknum = row_in_chunk(subhaloid, sim)
+    sim.load_data('SubLink', chunknum,
+                  keys = ['SubfindID', 'SnapNum'])
+    subfindid = sim.preloaded['SubLink' + str(chunknum)]['SubfindID'][rownum]
+    snapnum = sim.preloaded['SubLink' + str(chunknum)]['SnapNum'][rownum]
+
+    return subfindid, snapnum

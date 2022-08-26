@@ -10,9 +10,10 @@ import os
 from packaging import version
 
 assert version.parse(h5py.__version__) >= version.parse('2.9'), \
-'h5py >= 2.9.x is needed'
-# require h5py>=2.9.x for simulation.hdf5
-# use simulation.hdf5 for GroupFirstSub, but still use separate chunks for tree
+'h5py>=2.9.x is needed'
+# require h5py>=2.9.x for simulation.hdf5.
+# use simulation.hdf5 for GroupFirstSub, but still use separate chunks for
+# tree, to speed up searches.
 
 class SimulationBox:
     """ The class that stores the simulation box information and preloads
