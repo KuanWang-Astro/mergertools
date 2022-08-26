@@ -183,9 +183,9 @@ class SimulationBox:
         else:
             arr_dict = {}
             if catalog == 'SubLinkOffsets':
-                with h5py.File(path, 'r')['Subhalo/SubLink'] as f:
+                with h5py.File(path, 'r') as f:
                     for key in keys:
-                        arr_dict[key] = np.array(f[key])
+                        arr_dict[key] = np.array(f['Subhalo/SubLink'][key])
             else:
                 with h5py.File(path, 'r') as f:
                     for key in keys:
