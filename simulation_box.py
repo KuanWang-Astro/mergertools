@@ -180,15 +180,15 @@ class SimulationBox:
             arr_dict = {'GroupFirstSub': arr}
 
         else:
-            if catalog == 'SubLinkOffsets':
-                f = h5py.File(path, 'r')['Subhalo/SubLink']
-            else:
-                f = h5py.File(path, 'r')
-
             arr_dict = {}
-
-            for key in keys:
-                arr_dict[key] = np.array(f[key])
+            if catalog == 'SubLinkOffsets':
+                with h5py.File(path, 'r')['Subhalo/SubLink'] as f:
+                    for key in keys:
+                        arr_dict[key] = np.array(f[key])
+            else:
+                with h5py.File(path, 'r') as f:
+                    for key in keys:
+                        arr_dict[key] = np.array(f[key])
 
         self.preloaded[catalog + str(filenum)] = {
                     **self.preloaded[catalog + str(filenum)],
