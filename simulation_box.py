@@ -7,7 +7,10 @@ class used for specifying the simulation box and preloading data.
 import numpy as np
 import h5py
 import os
+from packaging import version
 
+assert version.parse(h5py.__version__) >= version.parse('2.9'), \
+'h5py >= 2.9.x is needed'
 # require h5py>=2.9.x for simulation.hdf5
 # use simulation.hdf5 for GroupFirstSub, but still use separate chunks for tree
 
@@ -124,7 +127,7 @@ class SimulationBox:
 
         raise OSError('Invalid file path: {}'.format(fpath))
 
-    def load_data(self, catalog, filenum, keys = None):
+    def load_data(self, catalog, filenum, keys):
         """ Loads a data catalog into a dictionary, where keys are consistent
         with TNG column names and columns are converted to numpy arrays.
 
@@ -141,9 +144,8 @@ class SimulationBox:
           number for 'SubLinkOffsets' and 'Group', and the chunk number for
           'SubLink'.
 
-        keys : list of str, optional
-          The columns to load from the table. If not specified, load all
-          available columns in file.
+        keys : list of str
+          The columns to load from the table.
 
         Returns
         -------
@@ -160,10 +162,18 @@ class SimulationBox:
 
         """
 
-        path = self.data_path(catalog, filenum)
-
         if isinstance(keys, str):
             keys = [keys]
+
+        if catalog + str(filenum) in self.preloaded:
+            existing = set(self.preloaded[catalog + str(filenum)].keys())
+            keys = list(set(keys) - existing)
+            if not keys: # all columns already loaded
+                return
+        else:
+            self.preloaded[catalog + str(filenum)] = {}
+
+        path = self.data_path(catalog, filenum)
 
         if catalog == 'Group':
             arr = np.load(path)
@@ -172,26 +182,16 @@ class SimulationBox:
         else:
             if catalog == 'SubLinkOffsets':
                 f = h5py.File(path, 'r')['Subhalo/SubLink']
-            elif catalog == 'SubLink':
+            else:
                 f = h5py.File(path, 'r')
 
             arr_dict = {}
-            if keys is None:
-                keys = f.keys()
-            if self.preloaded.__contains__(catalog + str(filenum)):
-                existing = set(self.preloaded[catalog + str(filenum)].keys())
-                keys = list(set(keys) - existing)
-                if len(keys) == 0:
-                    return
 
             for key in keys:
                 arr_dict[key] = np.array(f[key])
 
-        if self.preloaded.__contains__(catalog + str(filenum)):
-            self.preloaded[catalog + str(filenum)] = {
+        self.preloaded[catalog + str(filenum)] = {
                     **self.preloaded[catalog + str(filenum)],
                     **arr_dict}
-        else:
-            self.preloaded[catalog + str(filenum)] = arr_dict
 
         return
