@@ -73,7 +73,8 @@ def sublink_id(subfindid, snapnum, sim):
     """
 
     if not np.isscalar(snapnum):
-        raise TypeError('The input snapnum should be one number.')
+        raise TypeError('The input snapnum should be one number,' +
+                        ' process subhalos in different snapshots separately.')
 
     if isinstance(subfindid, tuple):
         subfindid = np.array(subfindid)
@@ -140,7 +141,7 @@ def row_in_chunk(subhaloid, sim):
     """
     chunknum, samechunk = chunk_num(subhaloid)
     if not samechunk:
-        raise Exception('The given subhalos are not in the same tree chunk,' +
+        raise Exception('The subhalos should be in the same tree chunk,' +
                         ' process subhalos in different chunks separately.')
     if not np.isscalar(chunknum):
         chunknum = chunknum[0]
