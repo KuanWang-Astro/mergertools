@@ -33,7 +33,7 @@ def load_single_subhalo(subhaloid, fields, sim):
     for field in fields:
         subhalo[field] = sim.preloaded['SubLink' + str(chunknum)]\
                                       [field][rownum]
-    
+
     return subhalo
 
 
@@ -59,8 +59,8 @@ def load_group_subhalos(subhaloid, fields, sim):
 
     rownum, chunknum = locate_object.row_in_chunk(subhaloid, sim)
 
-    fields = list(set(fields).union(['SubhaloGrNr']))
-    sim.load_data('SubLink', chunknum, fields)
+    fields_ = list(set(fields).union(['SubhaloGrNr']))
+    sim.load_data('SubLink', chunknum, fields_)
     grnr = sim.preloaded['SubLink' + str(chunknum)]['SubhaloGrNr'][rownum]
     mask = sim.preloaded['SubLink' + str(chunknum)]['SubhaloGrNr'] == grnr
 
