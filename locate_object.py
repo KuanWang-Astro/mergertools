@@ -142,7 +142,10 @@ def row_in_chunk(subhaloid, sim):
     chunknum, samechunk = chunk_num(subhaloid)
     if not samechunk:
         raise Exception('The subhalos should be in the same tree chunk,' +
-                        ' process subhalos in different chunks separately.')
+                        ' process subhalos in different chunks separately.' +
+                        ' Index of first subhalo in a different chunk ' +
+                        'is {}.'.format(np.sort(np.unique(chunknum,
+                        return_index = True)[1])[1]))
     if not np.isscalar(chunknum):
         chunknum = chunknum[0]
     sim.load_data('SubLink', chunknum, keys = ['SubhaloID'])
