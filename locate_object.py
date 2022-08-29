@@ -40,7 +40,7 @@ def subfind_central(groupnum, snapnum, sim):
     if isinstance(groupnum, tuple):
         groupnum = np.array(groupnum)
 
-    sim.load_data('Group', snapnum, keys = ['GroupFirstSub'])
+    sim.load_data('Group', snapnum, fields = ['GroupFirstSub'])
     central = sim.preloaded['Group'
                             + str(snapnum)]['GroupFirstSub'][groupnum]
 
@@ -79,7 +79,7 @@ def sublink_id(subfindid, snapnum, sim):
     if isinstance(subfindid, tuple):
         subfindid = np.array(subfindid)
 
-    sim.load_data('SubLinkOffsets', snapnum, keys = ['SubhaloID'])
+    sim.load_data('SubLinkOffsets', snapnum, fields = ['SubhaloID'])
     subhaloid = sim.preloaded['SubLinkOffsets'
                               + str(snapnum)]['SubhaloID'][subfindid]
 
@@ -148,7 +148,7 @@ def row_in_chunk(subhaloid, sim):
                         return_index = True)[1])[1]))
     if not np.isscalar(chunknum):
         chunknum = chunknum[0]
-    sim.load_data('SubLink', chunknum, keys = ['SubhaloID'])
+    sim.load_data('SubLink', chunknum, fields = ['SubhaloID'])
     rownum = np.searchsorted(sim.preloaded['SubLink' + str(chunknum)]\
                                           ['SubhaloID'],
                              subhaloid)
@@ -185,7 +185,7 @@ def subfind_id(subhaloid, sim):
 
     rownum, chunknum = row_in_chunk(subhaloid, sim)
     sim.load_data('SubLink', chunknum,
-                  keys = ['SubfindID', 'SnapNum'])
+                  fields = ['SubfindID', 'SnapNum'])
     subfindid = sim.preloaded['SubLink' + str(chunknum)]['SubfindID'][rownum]
     snapnum = sim.preloaded['SubLink' + str(chunknum)]['SnapNum'][rownum]
 

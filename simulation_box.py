@@ -128,7 +128,7 @@ class SimulationBox:
 
         raise OSError('Invalid file path: {}'.format(fpath))
 
-    def load_data(self, catalog, filenum, keys):
+    def load_data(self, catalog, filenum, fields):
         """ Loads a data catalog into a dictionary, where keys are consistent
         with TNG column names and columns are converted to numpy arrays.
 
@@ -145,7 +145,7 @@ class SimulationBox:
           number for 'SubLinkOffsets' and 'Group', and the chunk number for
           'SubLink'.
 
-        keys : list of str
+        fields : list of str
           The columns to load from the table.
 
         Returns
@@ -163,13 +163,13 @@ class SimulationBox:
 
         """
 
-        if isinstance(keys, str):
-            keys = [keys]
+        if isinstance(fields, str):
+            fields = [fields]
 
         if catalog + str(filenum) in self.preloaded:
             existing = set(self.preloaded[catalog + str(filenum)].keys())
-            keys = list(set(keys) - existing)
-            if not keys: # all columns already loaded
+            fields = list(set(fields) - existing)
+            if not fields: # all columns already loaded
                 return
         else:
             self.preloaded[catalog + str(filenum)] = {}
@@ -184,12 +184,12 @@ class SimulationBox:
             arr_dict = {}
             if catalog == 'SubLinkOffsets':
                 with h5py.File(path, 'r') as f:
-                    for key in keys:
-                        arr_dict[key] = np.array(f['Subhalo/SubLink'][key])
+                    for field in fields:
+                        arr_dict[field] = np.array(f['Subhalo/SubLink'][field])
             else:
                 with h5py.File(path, 'r') as f:
-                    for key in keys:
-                        arr_dict[key] = np.array(f[key])
+                    for field in fields:
+                        arr_dict[field] = np.array(f[field])
 
         self.preloaded[catalog + str(filenum)] = {
                     **self.preloaded[catalog + str(filenum)],
