@@ -1,9 +1,14 @@
+"""
+Module that loads parts of the SubLink merger trees as required.
+
+"""
+
 import numpy as np
 
-import load_data
+import simulation_box
 import locate_object
 
-def load_single_subhalo(shid, *args, **kwargs):
+def load_single_subhalo(subhaloid, fields, sim):
     """ Loads specified columns in the SubLink catalog for a given subhalo.
 
     Parameters
@@ -21,12 +26,18 @@ def load_single_subhalo(shid, *args, **kwargs):
     ....
 
     """
-    locate_object.chunk_num(shid)
-    load_data.load_data(*args, **kwargs)
-    locate_object.row_in_chunk(shid, **kwargs)
-    pass
 
-def load_group_subhalos():
+    rownum, chunknum = locate_object.row_in_chunk(subhaloid, sim)
+    subhalo = {}
+    sim.load_data('SubLink', chunknum, fields)
+    for field in fields:
+        subhalo[field] = sim.preloaded['SubLink' + str(chunknum)]\
+                                      [field][rownum]
+    
+    return subhalo
+
+
+def load_group_subhalos(subhaloid, fields, sim):
     """ Loads specified columns in the SubLink catalog for all subhalos in
     the same FOF group as the given subhalo.
 
@@ -45,7 +56,21 @@ def load_group_subhalos():
     ....
 
     """
-    pass
+
+    rownum, chunknum = locate_object.row_in_chunk(subhaloid, sim)
+
+    fields = list(set(fields).union(['SubhaloGrNr']))
+    sim.load_data('SubLink', chunknum, fields)
+    grnr = sim.preloaded['SubLink' + str(chunknum)]['SubhaloGrNr'][rownum]
+    mask = sim.preloaded['SubLink' + str(chunknum)]['SubhaloGrNr'] == grnr
+
+    groupsubs = {}
+    for field in fields:
+        groupsubs[field] = sim.preloaded['SubLink' + str(chunknum)]\
+                                        [field][mask]
+
+    return groupsubs
+
 
 def load_single_tree():
     """ Loads specified columns in the SubLink catalog for the subhalo-

@@ -63,6 +63,7 @@ class SimulationBox:
         self.basepath = basepath
         self.preloaded = {}
 
+
     def data_path(self, catalog, filenum):
         """ Constructs the path to a data file for the specified catalog
         type and file number.
@@ -127,6 +128,7 @@ class SimulationBox:
             return fpath
 
         raise OSError('Invalid file path: {}'.format(fpath))
+
 
     def load_data(self, catalog, filenum, fields):
         """ Loads a data catalog into a dictionary, where keys are consistent

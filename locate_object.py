@@ -46,6 +46,7 @@ def subfind_central(groupnum, snapnum, sim):
 
     return central
 
+
 def sublink_id(subfindid, snapnum, sim):
     """ Converts subhalo SubfindID(s) to SubhaloID(s) given the snapshot.
     Processes any number of subhalos in the same snapshot.
@@ -85,6 +86,7 @@ def sublink_id(subfindid, snapnum, sim):
 
     return subhaloid
 
+
 def chunk_num(subhaloid):
     """ Identifies the chunk of the SubLink tree for given subhalo(s).
 
@@ -114,6 +116,7 @@ def chunk_num(subhaloid):
     samechunk = len(np.unique(chunknum)) == 1
 
     return chunknum, samechunk
+
 
 def row_in_chunk(subhaloid, sim):
     """ Locates subhalo(s) within a tree file chunk.
