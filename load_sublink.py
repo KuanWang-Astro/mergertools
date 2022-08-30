@@ -55,10 +55,14 @@ def load_group_subhalos(subhaloid, fields, sim, numlimit=0):
 
     rownum, chunknum = locate_object.row_in_chunk(subhaloid, sim)
     catkey = 'SubLink' + str(chunknum)
-    fields_ = list(set(fields).union(set(['SubhaloGrNr', 'MassHistory'])))
+    fields_ = list(set(fields).union(set(['SubhaloGrNr',
+                                          'MassHistory',
+                                          'SnapNum'])))
     sim.load_data('SubLink', chunknum, fields_)
     grnr = sim.preloaded[catkey]['SubhaloGrNr'][rownum]
-    mask = sim.preloaded[catkey]['SubhaloGrNr'] == grnr
+    snap = sim.preloaded[catkey]['SnapNum'][rownum]
+    mask = np.logical_and(sim.preloaded[catkey]['SubhaloGrNr'] == grnr,
+                          sim.preloaded[catkey]['SnapNum'] == snap)
 
     groupsubs = {}
     for field in fields:
