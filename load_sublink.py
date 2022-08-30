@@ -81,7 +81,7 @@ def load_group_subhalos(subhaloid, fields, sim, numlimit=0):
     groupsubs['IndexInChunk'] = idx[order]
     for field in fields:
         groupsubs[field] = sim.preloaded[catkey][field][mask][order]
-        
+
     return groupsubs
 
 
@@ -144,8 +144,8 @@ def load_single_tree(subhaloid, fields, sim,
 def load_group_tree():
     """ Loads specified columns in the SubLink catalog for the subhalo-
     based merger tree, including progenitors and/or descendants of all
-    subhalos in the same FOF group as the given subhalo..
-
+    subhalos in the same FOF group as the given subhalo.
+    
     Parameters
     ----------
     ... : type
