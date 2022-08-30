@@ -135,17 +135,18 @@ def load_single_tree(subhaloid, fields, sim,
         return tree
 
     # all descendants
-    if not main_branch_only and not include_progenitors:
-        desc = subhalo['DescendantID']
-        idx = [rownum]
-        while desc != -1:
+    #if not main_branch_only and not include_progenitors:
+    #    desc = subhalo['DescendantID']
+    #    idx = [rownum]
+    #    while desc != -1:
+
 
 
 def load_group_tree():
     """ Loads specified columns in the SubLink catalog for the subhalo-
     based merger tree, including progenitors and/or descendants of all
     subhalos in the same FOF group as the given subhalo.
-    
+
     Parameters
     ----------
     ... : type
