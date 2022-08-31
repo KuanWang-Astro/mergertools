@@ -85,13 +85,10 @@ def load_group_subhalos(subhaloid, fields, sim, numlimit=0):
     return groupsubs
 
 
-def load_single_tree(subhaloid, fields, sim,
-                     main_branch_only=False,
-                     include_progenitors=True,
-                     include_descendants=False):
+def load_tree_progenitors(subhaloid, fields, sim,
+                          main_branch_only=False):
     """ Loads specified columns in the SubLink catalog for the subhalo-
-    based merger tree, including progenitors and/or descendants of the
-    given subhalo.
+    based merger tree, including progenitors of the given subhalo.
 
     Parameters
     ----------
@@ -105,53 +102,70 @@ def load_single_tree(subhaloid, fields, sim,
 
     """
 
-    # no progenitors and no descendants
-    if not include_descendants and not include_progenitors:
-        raise ValueError('If only the subhalo itself is needed, use the ' +
-                         '`load_sublink.load_single_subhalo` function.')
-
-    fields_ = list(set(fields).union(set(['RootDescendantID',
-                                          'DescendantID',
-                                          'MainLeafProgenitorID',
-                                          'FirstProgenitorID',
-                                          'NextProgenitorID',
+    fields_ = list(set(fields).union(set(['MainLeafProgenitorID',
                                           'LastProgenitorID'])))
     subhalo = load_single_subhalo(subhaloid, fields_, sim)
     rownum, chunknum = locate_object.row_in_chunk(subhaloid, sim)
     catkey = 'SubLink' + str(chunknum)
 
-    # progenitors only
-    if not include_descendants:
-        start = rownum
-        if main_branch_only:
-            end = rownum + (subhalo['MainLeafProgenitorID'] -
-                            subhalo['SubhaloID'])
-        else:
-            end = rownum + (subhalo['LastProgenitorID'] -
-                            subhalo['SubhaloID'])
-        tree = {}
-        for field in fields:
-            tree[field] = sim.preloaded[catkey][field][start : end + 1]
-        return tree
+    start = rownum
+    if main_branch_only:
+        end = rownum + (subhalo['MainLeafProgenitorID'] -
+                        subhalo['SubhaloID'])
+    else:
+        end = rownum + (subhalo['LastProgenitorID'] -
+                        subhalo['SubhaloID'])
 
-    # descendants only
-    if not include_progenitors:
-        desc = subhalo['DescendantID']
-        desc_row = rownum
-        idx = [desc_row]
-        while desc != -1:
-            jump = (sim.preloaded[catkey]['DescendantID'][desc_row] -
-                    sim.preloaded[catkey]['SubhaloID'][desc_row])
-            if main_branch_only and jump != -1:
-                break
-            desc_row += jump
-            idx.append(desc_row)
-            desc = sim.preloaded[catkey]['SubhaloID'][desc_row]
+    tree = {}
+    tree['Number'] = end - start + 1
+    tree['ChunkNumber'] = chunknum
+    tree['IndexInChunk'] = np.arange(start, end + 1)
+    for field in fields:
+        tree[field] = sim.preloaded[catkey][field][start : end + 1]
+    return tree
 
-        tree = {}
-        for field in fields:
-            tree[field] = sim.preloaded[catkey][field][idx]
-        return tree
+
+def load_tree_descendants(subhaloid, fields, sim,
+                          main_branch_only=False):
+    """ Loads specified columns in the SubLink catalog for the subhalo-
+    based merger tree, including descendants of the given subhalo.
+
+    Parameters
+    ----------
+    ... : type
+        ....
+
+    Returns
+    -------
+    ... : float
+        ...
+
+    """
+
+    fields_ = list(set(fields).union(set(['DescendantID'])))
+    subhalo = load_single_subhalo(subhaloid, fields_, sim)
+    rownum, chunknum = locate_object.row_in_chunk(subhaloid, sim)
+    catkey = 'SubLink' + str(chunknum)
+
+    desc = subhalo['DescendantID']
+    desc_row = rownum
+    idx = [desc_row]
+    while desc != -1:
+        jump = (sim.preloaded[catkey]['DescendantID'][desc_row] -
+                sim.preloaded[catkey]['SubhaloID'][desc_row])
+        if main_branch_only and jump != -1:
+            break
+        desc_row += jump
+        idx.append(desc_row)
+        desc = sim.preloaded[catkey]['SubhaloID'][desc_row]
+
+    tree = {}
+    tree['Number'] = len(idx)
+    tree['ChunkNumber'] = chunknum
+    tree['IndexInChunk'] = np.array(idx)
+    for field in fields:
+        tree[field] = sim.preloaded[catkey][field][idx]
+    return tree
 
 
 def load_group_tree():
