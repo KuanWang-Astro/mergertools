@@ -134,12 +134,24 @@ def load_single_tree(subhaloid, fields, sim,
             tree[field] = sim.preloaded[catkey][field][start : end + 1]
         return tree
 
-    # all descendants
-    #if not main_branch_only and not include_progenitors:
-    #    desc = subhalo['DescendantID']
-    #    idx = [rownum]
-    #    while desc != -1:
+    # descendants only
+    if not include_progenitors:
+        desc = subhalo['DescendantID']
+        desc_row = rownum
+        idx = [desc_row]
+        while desc != -1:
+            jump = (sim.preloaded[catkey]['DescendantID'][desc_row] -
+                    sim.preloaded[catkey]['SubhaloID'][desc_row])
+            if main_branch_only and jump != -1:
+                break
+            desc_row += jump
+            idx.append(desc_row)
+            desc = sim.preloaded[catkey]['SubhaloID'][desc_row]
 
+        tree = {}
+        for field in fields:
+            tree[field] = sim.preloaded[catkey][field][idx]
+        return tree
 
 
 def load_group_tree():
