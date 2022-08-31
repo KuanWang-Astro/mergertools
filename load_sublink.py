@@ -147,19 +147,19 @@ def load_tree_descendants(subhaloid, fields, sim,
     rownum, chunknum = locate_object.row_in_chunk(subhaloid, sim)
     catkey = 'SubLink' + str(chunknum)
 
-    desc = subhalo['SubhaloID']
-    desc_row = rownum
-    idx = [desc_row]
-    
-    while desc != -1:
-        jump = sim.preloaded[catkey]['DescendantID'][desc_row] - desc
+    head = subhalo['SubhaloID']
+    head_row = rownum
+    idx = [head_row]
+
+    while 1:
+        jump = sim.preloaded[catkey]['DescendantID'][head_row] - head
         if main_branch_only and jump != -1:
             break
-        desc_row += jump
-        if desc_row < 0:
+        head_row += jump
+        if head_row < 0:
             break
-        idx.append(desc_row)
-        desc = sim.preloaded[catkey]['SubhaloID'][desc_row]
+        idx.append(head_row)
+        head = sim.preloaded[catkey]['SubhaloID'][head_row]
 
     tree = {}
     tree['Number'] = len(idx)
@@ -170,8 +170,66 @@ def load_tree_descendants(subhaloid, fields, sim,
     return tree
 
 
-def walk_tree(subhaloid, pointer, sim, steps):
-    pass
+def walk_tree(subhaloid, fields, sim, pointer, steps=0):
+    """ Walks the tree following a certain pointer of relation (for
+    example, FirstProgenitorID, DescendantID, etc.), starting from the
+    given subhalo, for the specified number of steps.
+
+    Parameters
+    ----------
+    ... : type
+        ....
+
+    Returns
+    -------
+    ... : dict
+        ordered in the direction of the pointer
+
+    """
+
+    iter_pointers = ['FirstProgenitorID', 'NextProgenitorID',
+                     'DescendantID', 'NextSubhaloInFOFGroupID']
+    noniter_pointers = ['LastProgenitorID', 'MainLeafProgenitorID',
+                        'RootDescendantID', 'FirstSubhaloInFOFGroupID']
+
+    if pointer not in iter_pointers + noniter_pointers:
+        raise ValueError('Unknown pointer: {}. '.format(pointer) +
+                         'Choose from {}.'.format(iter_pointers +
+                                                  noniter_pointers))
+
+    fields_ = list(set(fields).union(set([pointer])))
+    subhalo = load_single_subhalo(subhaloid, fields_, sim)
+    rownum, chunknum = locate_object.row_in_chunk(subhaloid, sim)
+    catkey = 'SubLink' + str(chunknum)
+
+    head = subhalo['SubhaloID']
+    head_row = rownum
+    idx = [head_row]
+
+    if pointer in noniter_pointers:
+        jump = sim.preloaded[catkey][pointer][head_row] - head
+        if jump != 0:
+            head_row += jump
+            idx.append(head_row)
+            head = sim.preloaded[catkey][pointer][head_row]
+
+    else:
+        while head != -1:
+            jump = sim.preloaded[catkey][pointer][head_row] - head
+            head_row += jump
+            if head_row < 0:
+                break
+            idx.append(head_row)
+            head = sim.preloaded[catkey]['SubhaloID'][head_row]
+
+    trail = {}
+    trail['Number'] = len(idx)
+    trail['ChunkNumber'] = chunknum
+    trail['IndexInChunk'] = np.array(idx)
+    for field in fields:
+        trail[field] = sim.preloaded[catkey][field][idx]
+    return trail
+
 
 def load_group_tree():
     """ Loads specified columns in the SubLink catalog for the subhalo-
