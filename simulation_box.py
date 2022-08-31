@@ -50,13 +50,12 @@ class SimulationBox:
                          300: [1, 2, 3]}
 
         if Lbox not in [50, 100, 300]:
-            raise ValueError('Unknown box size: {}. '.format(str(Lbox)) +
+            raise ValueError('Unknown box size: {}. '.format(Lbox) +
                              'Choose from 50, 100, 300.')
         if resolution not in self.res_dict[Lbox]:
             raise ValueError('Unknown resolution for box size ' +
                              '{}: {}. Choose from {}.'.format(
-                             str(Lbox), str(resolution),
-                             str(self.res_dict[Lbox])[1 : -1]))
+                             Lbox, resolution, self.res_dict[Lbox]))
 
         self.Lbox = Lbox
         self.resolution = resolution
@@ -113,15 +112,15 @@ class SimulationBox:
         if self.dark:
             fpath = os.path.join(
                 self.basepath,
-                'TNG{}-{}-Dark_{}'.format(str(self.Lbox),
-                                          str(self.resolution),
-                                          dir_dict[catalog]),
+                'TNG{}-{}-Dark_{}'.format(self.Lbox,
+                                          self.resolution),
+                                          dir_dict[catalog],
                 fn_dict[catalog].format(num))
         else:
             fpath = os.path.join(
                 self.basepath,
-                'TNG{}-{}_{}'.format(str(self.Lbox),
-                                     str(self.resolution),
+                'TNG{}-{}_{}'.format(self.Lbox,
+                                     self.resolution,
                                      dir_dict[catalog]),
                 fn_dict[catalog].format(num))
 
