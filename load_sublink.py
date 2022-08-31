@@ -150,23 +150,29 @@ def load_tree_descendants(subhaloid, fields, sim,
     desc = subhalo['DescendantID']
     desc_row = rownum
     idx = [desc_row]
+    # check
     while desc != -1:
         jump = (sim.preloaded[catkey]['DescendantID'][desc_row] -
                 sim.preloaded[catkey]['SubhaloID'][desc_row])
         if main_branch_only and jump != -1:
             break
         desc_row += jump
+        if desc_row < 0:
+            break
         idx.append(desc_row)
         desc = sim.preloaded[catkey]['SubhaloID'][desc_row]
 
     tree = {}
     tree['Number'] = len(idx)
     tree['ChunkNumber'] = chunknum
-    tree['IndexInChunk'] = np.array(idx)
+    tree['IndexInChunk'] = np.array(idx)[::-1]
     for field in fields:
-        tree[field] = sim.preloaded[catkey][field][idx]
+        tree[field] = sim.preloaded[catkey][field][idx[::-1]]
     return tree
 
+
+def walk_tree(subhaloid, pointer, sim, steps):
+    pass
 
 def load_group_tree():
     """ Loads specified columns in the SubLink catalog for the subhalo-
