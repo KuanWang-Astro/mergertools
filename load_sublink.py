@@ -147,13 +147,12 @@ def load_tree_descendants(subhaloid, fields, sim,
     rownum, chunknum = locate_object.row_in_chunk(subhaloid, sim)
     catkey = 'SubLink' + str(chunknum)
 
-    desc = subhalo['DescendantID']
+    desc = subhalo['SubhaloID']
     desc_row = rownum
     idx = [desc_row]
-    # check
+    
     while desc != -1:
-        jump = (sim.preloaded[catkey]['DescendantID'][desc_row] -
-                sim.preloaded[catkey]['SubhaloID'][desc_row])
+        jump = sim.preloaded[catkey]['DescendantID'][desc_row] - desc
         if main_branch_only and jump != -1:
             break
         desc_row += jump
