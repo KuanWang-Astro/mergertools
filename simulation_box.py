@@ -8,6 +8,7 @@ import numpy as np
 import h5py
 import os
 from packaging import version
+import gc
 
 assert version.parse(h5py.__version__) >= version.parse('2.9'), \
 'h5py>=2.9.x is needed'
@@ -198,3 +199,13 @@ class SimulationBox:
                     **arr_dict}
 
         return
+
+
+    def preload_max_set(self):
+        pass
+
+
+    def clear_preloaded(self):
+        del self.preloaded
+        self.preloaded = {}
+        gc.collect()
