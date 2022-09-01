@@ -13,13 +13,24 @@ def load_single_subhalo(subhaloid, fields, sim):
 
     Parameters
     ----------
-    ... : type
-        ....
+    subhaloid :  int
+      The SubhaloID of the subhalo to load. SubhaloID is the SubLink
+      index and is unique throughout all snapshots.
+
+    fields : list of str
+      The columns to load from the table.
+
+    sim : class obj
+      Instance of the simulation_box.SimulationBox class, which specifies
+      the simulation box to work with.
 
     Returns
     -------
-    ... : float
-        ...
+    subhalo : dict
+      Dictionary containing the specified fields for the given subhalo.
+      Entries are stored as single-element arrays. Also includes the number
+      of subhalos (1 in this case), the SubLink chunk number in which the
+      subhalo is stored, and the row index of the given subhalo in the chunk.
 
     """
 
@@ -30,27 +41,49 @@ def load_single_subhalo(subhaloid, fields, sim):
     subhalo = {}
     subhalo['Number'] = 1
     subhalo['ChunkNumber'] = chunknum
-    subhalo['IndexInChunk'] = rownum
+    subhalo['IndexInChunk'] = np.array([rownum])
     for field in fields:
-        subhalo[field] = sim.preloaded[catkey][field][rownum]
+        subhalo[field] = sim.preloaded[catkey][field][rownum : rownum + 1]
 
     return subhalo
 
 
-def walk_tree(subhaloid, fields, sim, pointer, maxsteps=0):
-    """ Walks the tree following a certain pointer of relation (for
-    example, FirstProgenitorID, DescendantID, etc.), starting from the
-    given subhalo, for the specified number of steps.
+def walk_tree(subhaloid, fields, sim, pointer, numlimit=0):
+    """ Walks the tree following a given pointer (e.g., FirstProgenitorID,
+    DescendantID, etc.) iteratively, starting from the given subhalo, with
+    an optional number limit of subhalos to load.
 
     Parameters
     ----------
-    ... : type
-        ....
+    subhaloid :  int or array_like
+      The SubhaloID of the subhalo to start from. SubhaloID is the SubLink
+      index and is unique throughout all snapshots.
+
+    fields : list of str
+      The columns to load from the table.
+
+    sim : class obj
+      Instance of the simulation_box.SimulationBox class, which specifies
+      the simulation box to work with.
+
+    pointer : str
+      The name of the pointer to follow. Choose from the given set of pointer
+      names in https://www.tng-project.org/data/docs/specifications/#sec4a.
+
+    numlimit : int, optional
+      The maximum number of subhalos to load along the pointer direction,
+      including the starting point. Default is 0, in which case the function
+      follows the pointer until there are no more subhalos ahead.
+
 
     Returns
     -------
-    ... : dict
-        ordered in the direction of the pointer
+    chain : dict
+        Dictionary containing the specified fields for the chain of subhalos,
+        ordered in the direction of the pointer. Entries are stored as numpy
+        arrays. Also includes the number of subhalos, the SubLink chunk number
+        in which the subhalos are stored, and the row indices of the loaded
+        subhalos in the chunk.
 
     """
 
@@ -87,17 +120,17 @@ def walk_tree(subhaloid, fields, sim, pointer, maxsteps=0):
             if head_row < 0:
                 break
             idx.append(head_row)
-            if maxsteps and len(idx) == maxsteps + 1:
+            if numlimit and len(idx) == numlimit:
                 break
             head = sim.preloaded[catkey]['SubhaloID'][head_row]
 
-    trail = {}
-    trail['Number'] = len(idx)
-    trail['ChunkNumber'] = chunknum
-    trail['IndexInChunk'] = np.array(idx)
+    chain = {}
+    chain['Number'] = len(idx)
+    chain['ChunkNumber'] = chunknum
+    chain['IndexInChunk'] = np.array(idx)
     for field in fields:
-        trail[field] = sim.preloaded[catkey][field][idx]
-    return trail
+        chain[field] = sim.preloaded[catkey][field][idx]
+    return chain
 
 
 def load_group_subhalos(subhaloid, fields, sim, numlimit=0):
