@@ -55,7 +55,7 @@ def walk_tree(subhaloid, fields, sim, pointer, numlimit=0):
 
     Parameters
     ----------
-    subhaloid :  int or array_like
+    subhaloid :  int
       The SubhaloID of the subhalo to start from. SubhaloID is the SubLink
       index and is unique throughout all snapshots.
 
@@ -99,10 +99,11 @@ def walk_tree(subhaloid, fields, sim, pointer, numlimit=0):
 
     fields_ = list(set(fields).union(set([pointer])))
     subhalo = load_single_subhalo(subhaloid, fields_, sim)
-    rownum, chunknum = locate_object.row_in_chunk(subhaloid, sim)
+    chunknum = subhalo['ChunkNumber']
+    rownum = subhalo['IndexInChunk'][0]
     catkey = 'SubLink' + str(chunknum)
 
-    head = subhalo['SubhaloID']
+    head = subhalo['SubhaloID'][0]
     head_row = rownum
     idx = [head_row]
 
@@ -123,7 +124,6 @@ def walk_tree(subhaloid, fields, sim, pointer, numlimit=0):
             if numlimit and len(idx) == numlimit:
                 break
             head = sim.preloaded[catkey]['SubhaloID'][head_row]
-    print(idx)
     chain = {}
     chain['Number'] = len(idx)
     chain['ChunkNumber'] = chunknum
@@ -139,7 +139,7 @@ def load_group_subhalos(subhaloid, fields, sim, numlimit=0):
 
     Parameters
     ----------
-    subhaloid :  int or array_like
+    subhaloid :  int
       The SubhaloID of the subhalo whose group to load. SubhaloID is the
       SubLink index and is unique throughout all snapshots.
 
