@@ -99,8 +99,8 @@ def chunk_num(subhaloid):
     Returns
     -------
     chunknum : int or array_like
-      The chunk number of the given subhalos. Has same shape as the input
-      subhaloid.
+      The SubLink chunk number of the given subhalos. Has same shape as the
+      input subhaloid.
 
     samechunk : bool
       True if all the given subhalos are in the same tree file chunk, False
@@ -138,8 +138,8 @@ def row_in_chunk(subhaloid, sim):
       as the input subhaloid.
 
     chunknum : int
-      The chunk number of the given subhalos. Subhalos required to be in the
-      same chunk.
+      The SubLink chunk number of the given subhalos. Subhalos required to be
+      in the same chunk.
 
     """
     chunknum, samechunk = chunk_num(subhaloid)
