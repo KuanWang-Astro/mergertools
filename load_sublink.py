@@ -123,7 +123,7 @@ def walk_tree(subhaloid, fields, sim, pointer, numlimit=0):
             if numlimit and len(idx) == numlimit:
                 break
             head = sim.preloaded[catkey]['SubhaloID'][head_row]
-
+    print(idx)
     chain = {}
     chain['Number'] = len(idx)
     chain['ChunkNumber'] = chunknum
@@ -139,21 +139,42 @@ def load_group_subhalos(subhaloid, fields, sim, numlimit=0):
 
     Parameters
     ----------
-    ... : type
-        ....
+    subhaloid :  int or array_like
+      The SubhaloID of the subhalo whose group to load. SubhaloID is the
+      SubLink index and is unique throughout all snapshots.
+
+    fields : list of str
+      The columns to load from the table.
+
+    sim : class obj
+      Instance of the simulation_box.SimulationBox class, which specifies
+      the simulation box to work with.
 
     numlimit : int, optional
-        The number of subhalos to load, ordered by the MassHistory column.
-        Default is 0, in which case all subhalos in the group are loaded.
+        The maximum number of subhalos to load, ordered by the MassHistory
+        column. Default is 0, in which case all subhalos in the group are
+        loaded.
 
     Returns
     -------
-    ... : float
-        ordered by the MassHistory column.
+    groupsubs : dict
+        Dictionary containing the specified fields for the subhalos in the
+        FOF group, ordered by the MassHistory column. Note that the input
+        subhalo is not guaranteed to be the first in the loaded dictionary
+        or guaranteed to be included if a number limit of subhalos is set.
+        Entries are stored as numpy arrays. Also includes the number of
+        subhalos, the SubLink chunk number in which the subhalos are stored,
+        and the row indices of the loaded subhalos in the chunk.
 
     """
 
-    rownum, chunknum = locate_object.row_in_chunk(subhaloid, sim)
+    primary_subhaloid = walk_tree(subhaloid, ['SubhaloID'], sim,
+                                  'FirstSubhaloInFOFGroupID')['SubhaloID'][0]
+
+    groupsubs = walk_tree(primary_subhaloid, fields, sim,
+                          'NextSubhaloInFOFGroupID')
+
+    """rownum, chunknum = locate_object.row_in_chunk(subhaloid, sim)
     catkey = 'SubLink' + str(chunknum)
     fields_ = list(set(fields).union(set(['SubhaloGrNr',
                                           'MassHistory',
@@ -178,7 +199,7 @@ def load_group_subhalos(subhaloid, fields, sim, numlimit=0):
     for field in fields:
         groupsubs[field] = sim.preloaded[catkey][field][mask][order]
 
-    return groupsubs
+    return groupsubs"""
 
 
 def load_tree_progenitors(subhaloid, fields, sim,
