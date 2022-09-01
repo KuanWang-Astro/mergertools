@@ -201,10 +201,40 @@ class SimulationBox:
 
 
     def preload_max_set(self):
+        """ to avoid opening the hdf5 files multiple times.
+
+        Parameters
+        ----------
+
+
+        Returns
+        -------
+
+
+        """
+
         pass
 
 
-    def clear_preloaded(self):
-        del self.preloaded
-        self.preloaded = {}
+    def clear_preloaded(self, keep_catalogs=None):
+        """ Deletes part or all of the preloaded catalogs to release memory.
+
+        Parameters
+        ----------
+        keep_catalogs : list of str, optional
+          List of keys to the preloaded categories that are to be kept. The
+          rest will be deleted. Default is None, in which case all preloaded
+          catalogs will be deleted.
+
+        Returns
+        -------
+        None
+
+        """
+
+        if keep_catalogs:
+            self.preloaded = {k: self.preloaded[k] for k in keep_catalogs)}
+        else:
+            self.preloaded = {}
         gc.collect()
+        return
