@@ -135,7 +135,8 @@ def walk_tree(subhaloid, fields, sim, pointer, numlimit=0):
 
 def load_group_subhalos(subhaloid, fields, sim, numlimit=0):
     """ Loads specified columns in the SubLink catalog for all subhalos in
-    the same FOF group as the given subhalo.
+    the same FOF group as the given subhalo. A wrapper around the function
+    `load_sublink.walk_tree`.
 
     Parameters
     ----------
@@ -168,38 +169,14 @@ def load_group_subhalos(subhaloid, fields, sim, numlimit=0):
 
     """
 
-    primary_subhaloid = walk_tree(subhaloid, ['SubhaloID'], sim,
-                                  'FirstSubhaloInFOFGroupID')['SubhaloID'][0]
+    fields_ = list(set(fields).union(set(['SubhaloID'])))
+    primary_subhaloid = walk_tree(subhaloid, fields_, sim,
+                                  'FirstSubhaloInFOFGroupID')['SubhaloID'][-1]
 
     groupsubs = walk_tree(primary_subhaloid, fields, sim,
-                          'NextSubhaloInFOFGroupID')
+                          'NextSubhaloInFOFGroupID', numlimit)
 
-    """rownum, chunknum = locate_object.row_in_chunk(subhaloid, sim)
-    catkey = 'SubLink' + str(chunknum)
-    fields_ = list(set(fields).union(set(['SubhaloGrNr',
-                                          'MassHistory',
-                                          'SnapNum'])))
-    sim.load_data('SubLink', chunknum, fields_)
-
-    grnr = sim.preloaded[catkey]['SubhaloGrNr'][rownum]
-    snap = sim.preloaded[catkey]['SnapNum'][rownum]
-    mask = np.logical_and(sim.preloaded[catkey]['SubhaloGrNr'] == grnr,
-                          sim.preloaded[catkey]['SnapNum'] == snap)
-    idx = np.arange(len(sim.preloaded[catkey]['SnapNum']))[mask]
-    numtot = len(idx)
-    order = np.argsort(sim.preloaded[catkey]['MassHistory'][mask])[::-1]
-    if numlimit and numlimit < numtot:
-        order = order[: numlimit + 1]
-        numtot = numlimit
-
-    groupsubs = {}
-    groupsubs['Number'] = numtot
-    groupsubs['ChunkNumber'] = chunknum
-    groupsubs['IndexInChunk'] = idx[order]
-    for field in fields:
-        groupsubs[field] = sim.preloaded[catkey][field][mask][order]
-
-    return groupsubs"""
+    return groupsubs
 
 
 def load_tree_progenitors(subhaloid, fields, sim,
