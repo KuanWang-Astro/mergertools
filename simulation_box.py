@@ -200,7 +200,7 @@ class SimulationBox:
         return
 
 
-    def preload_max_set(self):
+    def preload_max_set(self, fields):
         """ to avoid opening the hdf5 files multiple times.
 
         Parameters
