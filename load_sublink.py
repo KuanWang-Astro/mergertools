@@ -179,20 +179,37 @@ def load_group_subhalos(subhaloid, fields, sim, numlimit=0):
     return groupsubs
 
 
-def load_tree_progenitors(subhaloid, fields, sim,
-                          main_branch_only=False):
+def load_tree_progenitors(subhaloid, fields, sim, main_branch_only):
     """ Loads specified columns in the SubLink catalog for the progenitors
     of the given subhalo.
 
     Parameters
     ----------
-    ... : type
-        ....
+    subhaloid :  int
+      The SubhaloID of the subhalo whose progenitors to load. SubhaloID is
+      the SubLink index and is unique throughout all snapshots.
+
+    fields : list of str
+      The columns to load from the table.
+
+    sim : class obj
+      Instance of the simulation_box.SimulationBox class, which specifies
+      the simulation box to work with.
+
+    main_branch_only : bool
+      If True, only load main branch progenitors of the given subhalo, if
+      False, load all progenitors.
 
     Returns
     -------
-    ... : float
-        starts from the input subhalo.
+    progenitors : dict
+        Dictionary containing the specified fields for the progenitors of
+        the given subhalo, including itself. Subhalos are sorted starting
+        from the input subhalo, in the same order as in the original tree,
+        i.e., in a depth-first manner. Entries are stored as numpy arrays.
+        Also includes the number of subhalos, the SubLink chunk number in
+        which the subhalos are stored, and the row indices of the loaded
+        subhalos in the chunk.
 
     """
 
@@ -220,20 +237,38 @@ def load_tree_progenitors(subhaloid, fields, sim,
     return progenitors
 
 
-def load_tree_descendants(subhaloid, fields, sim,
-                          main_branch_only=False):
+def load_tree_descendants(subhaloid, fields, sim, main_branch_only):
     """ Loads specified columns in the SubLink catalog for the descendants
     of the given subhalo. A wrapper around `load_sublink.walk_tree`.
 
     Parameters
     ----------
-    ... : type
-        ....
+    subhaloid :  int
+      The SubhaloID of the subhalo whose descendants to load. SubhaloID is
+      the SubLink index and is unique throughout all snapshots.
+
+    fields : list of str
+      The columns to load from the table.
+
+    sim : class obj
+      Instance of the simulation_box.SimulationBox class, which specifies
+      the simulation box to work with.
+
+    main_branch_only : bool
+      Each subhalo has at most one immediate descendant, but a subhalo is
+      not necessarily the main branch progenitor of its descendant. If True,
+      only load descendants for which the input subhalo is a main branch
+      progenitor. If False, load all descendants.
 
     Returns
     -------
-    ... : float
-        ...
+    descendants : dict
+        Dictionary containing the specified fields for the descendants of
+        the given subhalo, including itself. Subhalos are sorted from early
+        to late and start from the input subhalo. Entries are stored as numpy
+        arrays. Also includes the number of subhalos, the SubLink chunk number
+        in which the subhalos are stored, and the row indices of the loaded
+        subhalos in the chunk.
 
     """
 
@@ -251,22 +286,3 @@ def load_tree_descendants(subhaloid, fields, sim,
                 descendants[field] = descendants[field][:truncate + 1]
 
     return descendants
-
-
-def load_group_tree():
-    """ Loads specified columns in the SubLink catalog for the subhalo-
-    based merger tree, including progenitors and/or descendants of all
-    subhalos in the same FOF group as the given subhalo.
-
-    Parameters
-    ----------
-    ... : type
-        ....
-
-    Returns
-    -------
-    ... : float
-        ...
-
-    """
-    pass
