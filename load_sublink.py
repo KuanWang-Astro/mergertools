@@ -8,13 +8,13 @@ import numpy as np
 import simulation_box
 import locate_object
 
-def load_single_subhalo(subhaloid, fields, sim):
+def load_subhalo_only(subhaloid, fields, sim):
     """ Loads specified columns in the SubLink catalog for a given subhalo.
 
     Parameters
     ----------
-    subhaloid :  int
-      The SubhaloID of the subhalo to load. SubhaloID is the SubLink
+    subhaloid :  int or array_like
+      The SubhaloID(s) of the subhalo(s) to load. SubhaloID is the SubLink
       index and is unique throughout all snapshots.
 
     fields : list of str
@@ -27,31 +27,33 @@ def load_single_subhalo(subhaloid, fields, sim):
     Returns
     -------
     subhalo : dict
-      Dictionary containing the specified fields for the given subhalo.
+      Dictionary containing the specified fields for the given subhalo(s).
       Entries are stored as single-element arrays. Also includes the number
-      of subhalos (1 in this case), the SubLink chunk number in which the
-      subhalo is stored, and the row index of the given subhalo in the chunk.
+      of subhalos, the SubLink chunk number of the subhalo(s), and the row
+      index(es) of the subhalo(s) in the chunk.
 
     """
+
+    if np.isscalar(subhaloid):
+        subhaloid = np.array([subhaloid])
 
     rownum, chunknum = locate_object.row_in_chunk(subhaloid, sim)
     catkey = 'SubLink' + str(chunknum)
     sim.load_data('SubLink', chunknum, fields)
 
     subhalo = {}
-    subhalo['Number'] = 1
+    subhalo['Number'] = len(subhaloid)
     subhalo['ChunkNumber'] = chunknum
-    subhalo['IndexInChunk'] = np.array([rownum])
+    subhalo['IndexInChunk'] = rownum
     for field in fields:
-        subhalo[field] = sim.preloaded[catkey][field][rownum : rownum + 1]
+        subhalo[field] = sim.preloaded[catkey][field][rownum]
 
     return subhalo
 
 
-def walk_tree(subhaloid, fields, sim, pointer, numlimit=0):
+def walk_tree(subhaloid, fields, sim, pointer):
     """ Walks the SubLink tree following a given pointer (e.g., DescendantID,
-    FirstProgenitorID, etc.) iteratively, starting from the given subhalo,
-    with an optional number limit of subhalos to load.
+    FirstProgenitorID, etc.) iteratively, starting from the given subhalo.
 
     Parameters
     ----------
@@ -70,11 +72,6 @@ def walk_tree(subhaloid, fields, sim, pointer, numlimit=0):
       The name of the pointer to follow. Choose from the given set of pointer
       names in https://www.tng-project.org/data/docs/specifications/#sec4a.
 
-    numlimit : int, optional
-      The maximum number of subhalos to load along the pointer direction,
-      including the starting point. Default is 0, in which case the function
-      follows the pointer until there are no more subhalos ahead.
-
 
     Returns
     -------
@@ -87,6 +84,9 @@ def walk_tree(subhaloid, fields, sim, pointer, numlimit=0):
 
     """
 
+    if not np.isscalar(subhaloid):
+        raise TypeError('Process one subhalo at a time.')
+
     iter_pointers = ['FirstProgenitorID', 'NextProgenitorID',
                      'DescendantID', 'NextSubhaloInFOFGroupID']
     noniter_pointers = ['LastProgenitorID', 'MainLeafProgenitorID',
@@ -98,7 +98,7 @@ def walk_tree(subhaloid, fields, sim, pointer, numlimit=0):
                                                   noniter_pointers))
 
     fields_ = list(set(fields).union(set([pointer])))
-    subhalo = load_single_subhalo(subhaloid, fields_, sim)
+    subhalo = load_subhalo_only(subhaloid, fields_, sim)
     chunknum = subhalo['ChunkNumber']
     rownum = subhalo['IndexInChunk'][0]
     catkey = 'SubLink' + str(chunknum)
@@ -121,8 +121,6 @@ def walk_tree(subhaloid, fields, sim, pointer, numlimit=0):
             if head_row < 0:
                 break
             idx.append(head_row)
-            if numlimit and len(idx) == numlimit:
-                break
             head = sim.preloaded[catkey]['SubhaloID'][head_row]
     chain = {}
     chain['Number'] = len(idx)
@@ -133,7 +131,7 @@ def walk_tree(subhaloid, fields, sim, pointer, numlimit=0):
     return chain
 
 
-def load_group_subhalos(subhaloid, fields, sim, numlimit=0):
+def load_group_subhalos(subhaloid, fields, sim):
     """ Loads specified columns in the SubLink catalog for all subhalos in
     the same FOF group as the given subhalo, ordered by the MassHistory
     column. A wrapper around `load_sublink.walk_tree`.
@@ -151,30 +149,27 @@ def load_group_subhalos(subhaloid, fields, sim, numlimit=0):
       Instance of the simulation_box.SimulationBox class, which specifies
       the simulation box to work with.
 
-    numlimit : int, optional
-        The maximum number of subhalos to load, ordered by the MassHistory
-        column. Default is 0, in which case all subhalos in the group are
-        loaded.
-
     Returns
     -------
     groupsubs : dict
         Dictionary containing the specified fields for the subhalos in the
         FOF group, ordered by the MassHistory column. Note that the input
-        subhalo is not guaranteed to be the first in the loaded dictionary
-        or guaranteed to be included if a number limit of subhalos is set.
+        subhalo is not guaranteed to be the first in the loaded dictionary.
         Entries are stored as numpy arrays. Also includes the number of
         subhalos, the SubLink chunk number in which the subhalos are stored,
         and the row indices of the loaded subhalos in the chunk.
 
     """
 
+    if not np.isscalar(subhaloid):
+        raise TypeError('Process one subhalo at a time.')
+
     fields_ = list(set(fields).union(set(['SubhaloID'])))
     primary_subhaloid = walk_tree(subhaloid, fields_, sim,
                                   'FirstSubhaloInFOFGroupID')['SubhaloID'][-1]
 
     groupsubs = walk_tree(primary_subhaloid, fields, sim,
-                          'NextSubhaloInFOFGroupID', numlimit)
+                          'NextSubhaloInFOFGroupID')
 
     return groupsubs
 
@@ -213,9 +208,12 @@ def load_tree_progenitors(subhaloid, fields, sim, main_branch_only):
 
     """
 
+    if not np.isscalar(subhaloid):
+        raise TypeError('Process one subhalo at a time.')
+
     fields_ = list(set(fields).union(set(['MainLeafProgenitorID',
                                           'LastProgenitorID'])))
-    subhalo = load_single_subhalo(subhaloid, fields_, sim)
+    subhalo = load_subhalo_only(subhaloid, fields_, sim)
     chunknum = subhalo['ChunkNumber']
     rownum = subhalo['IndexInChunk'][0]
     catkey = 'SubLink' + str(chunknum)
@@ -271,6 +269,9 @@ def load_tree_descendants(subhaloid, fields, sim, main_branch_only):
         subhalos in the chunk.
 
     """
+
+    if not np.isscalar(subhaloid):
+        raise TypeError('Process one subhalo at a time.')
 
     descendants = walk_tree(subhaloid, fields, sim, 'DescendantID')
 
