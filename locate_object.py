@@ -7,46 +7,6 @@ import numpy as np
 
 import simulation_box
 
-def subfind_central(groupnum, snapnum, sim):
-    """ Finds the SubfindID of the primary (most massive) subhalo in a
-    given FOF group. Processes any number of groups in the same snapshot.
-
-    Parameters
-    ----------
-    groupnum : int or array_like
-      The group number(s) to find the primary subhalo(s) for. Group number
-      is the index of the FOF group in the group catalog. The group number
-      is only unique within each snapshot and not throughout the history.
-
-    snapnum : int
-      The snapshot number that contains the group(s). Should be one number.
-
-    sim : class obj
-      Instance of the simulation_box.SimulationBox class, which specifies
-      the simulation box to work with.
-
-    Returns
-    -------
-    central : int or array_like
-      The SubfindID(s) of primary subhalo(s) of the given groups. Has same
-      shape as the input groupnum. The SubfindID is only unique within
-      each snapshot and not throughout the history.
-
-    """
-
-    if not np.isscalar(snapnum):
-        raise TypeError('The input snapnum should be one number.')
-
-    if isinstance(groupnum, tuple):
-        groupnum = np.array(groupnum)
-
-    sim.load_data('Group', snapnum, fields = ['GroupFirstSub'])
-    central = sim.preloaded['Group'
-                            + str(snapnum)]['GroupFirstSub'][groupnum]
-
-    return central
-
-
 def sublink_id(subfindid, snapnum, sim):
     """ Converts subhalo SubfindID(s) to SubhaloID(s) given the snapshot.
     Processes any number of subhalos in the same snapshot.
@@ -77,9 +37,6 @@ def sublink_id(subfindid, snapnum, sim):
         raise TypeError('The input snapnum should be one number,' +
                         ' process subhalos in different snapshots separately.')
 
-    if isinstance(subfindid, tuple):
-        subfindid = np.array(subfindid)
-
     sim.load_data('SubLinkOffsets', snapnum, fields = ['SubhaloID'])
     subhaloid = sim.preloaded['SubLinkOffsets'
                               + str(snapnum)]['SubhaloID'][subfindid]
@@ -88,7 +45,9 @@ def sublink_id(subfindid, snapnum, sim):
 
 
 def chunk_num(subhaloid):
-    """ Identifies the chunk of the SubLink tree for given subhalo(s).
+    """ Identifies the chunk of the SubLink tree for given subhalo(s). This
+    information is available from the subhaloid alone and does not depend on
+    the simulation box.
 
     Parameters
     ----------
@@ -108,11 +67,10 @@ def chunk_num(subhaloid):
 
     """
 
-    # doesn't depend on box
     if np.isscalar(subhaloid):
-        return subhaloid // int(1e16), True
+        return subhaloid // 10000000000000000, True
 
-    chunknum = np.array(subhaloid) // int(1e16)
+    chunknum = np.array(subhaloid) // 10000000000000000
     samechunk = len(np.unique(chunknum)) == 1
 
     return chunknum, samechunk
@@ -155,6 +113,9 @@ def row_in_chunk(subhaloid, sim):
     rownum = np.searchsorted(sim.preloaded['SubLink' + str(chunknum)]\
                                           ['SubhaloID'],
                              subhaloid)
+    if subhaloid != sim.preloaded['SubLink' + str(chunknum)]['SubhaloID']\
+                                 [rownum]:
+        raise ValueError('SubhaloID does not exist.')
 
     return rownum, chunknum
 
@@ -193,3 +154,77 @@ def subfind_id(subhaloid, sim):
     snapnum = sim.preloaded['SubLink' + str(chunknum)]['SnapNum'][rownum]
 
     return subfindid, snapnum
+
+
+def subfind_central(groupnum, snapnum, sim):
+    """ Finds the SubfindID of the primary (most massive) subhalo in a
+    given FOF group. Processes any number of groups in the same snapshot.
+
+    Parameters
+    ----------
+    groupnum : int or array_like
+      The group number(s) to find the primary subhalo(s) for. Group number
+      is the index of the FOF group in the group catalog. The group number
+      is only unique within each snapshot and not throughout the history.
+
+    snapnum : int
+      The snapshot number that contains the group(s). Should be one number.
+
+    sim : class obj
+      Instance of the simulation_box.SimulationBox class, which specifies
+      the simulation box to work with.
+
+    Returns
+    -------
+    central : int or array_like
+      The SubfindID(s) of primary subhalo(s) of the given groups. Has same
+      shape as the input groupnum. The SubfindID is only unique within
+      each snapshot and not throughout the history.
+
+    """
+
+    if not np.isscalar(snapnum):
+        raise TypeError('The input snapnum should be one number.')
+
+    sim.load_data('Group', snapnum, fields = ['GroupFirstSub'])
+    central = sim.preloaded['Group'
+                            + str(snapnum)]['GroupFirstSub'][groupnum]
+
+    return central
+
+
+def group_num(subfindid, snapnum, sim):
+    """ Identifies the index(es) of the halo(s) hosting the input subhalo(s)
+    given the SubfindID(s) and snapshot. Processes any number of subhalos in
+    the same snapshot.
+
+    Parameters
+    ----------
+    subfindid : int or array_like
+      The SubfindID(s) of subhalo(s) to find the SubhaloID(s) for. SubfindID
+      is only unique within each snapshot and not throughout the history.
+
+    snapnum : int
+      The snapshot number that contains the subhalo(s). Should be one number.
+
+    sim : class obj
+      Instance of the simulation_box.SimulationBox class, which specifies
+      the simulation box to work with.
+
+    Returns
+    -------
+    groupnum : int or array_like
+      The SubhaloGrNr(s) of the given subhalos. Has same shape as the input
+      subfindid. SubhaloGrNr is the index of the halo in the group catalog.
+
+    snapnum : int
+      The snapshot number that contains the halo(s).
+
+    """
+    if not np.isscalar(snapnum):
+        raise TypeError('The input snapnum should be one number,' +
+                        ' process subhalos in different snapshots separately.')
+
+    pass ###########add
+
+    return groupnum, snapnum
