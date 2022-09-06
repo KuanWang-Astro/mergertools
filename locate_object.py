@@ -193,19 +193,16 @@ def subfind_central(groupnum, snapnum, sim):
     return central
 
 
-def group_num(subfindid, snapnum, sim):
+def group_num(subhaloid, sim):
     """ Identifies the index(es) of the halo(s) hosting the input subhalo(s)
-    given the SubfindID(s) and snapshot. Processes any number of subhalos in
-    the same snapshot.
+    given the SubhaloID(s) and snapshot. Processes any number of subhalos in
+    the same tree chunk.
 
     Parameters
     ----------
-    subfindid : int or array_like
-      The SubfindID(s) of subhalo(s) to find the SubhaloID(s) for. SubfindID
-      is only unique within each snapshot and not throughout the history.
-
-    snapnum : int
-      The snapshot number that contains the subhalo(s). Should be one number.
+    subhaloid :  int or array_like
+      The SubhaloID(s) of the subhalos to find group numbers for. SubhaloID
+      is the SubLink index and is unique throughout all snapshots.
 
     sim : class obj
       Instance of the simulation_box.SimulationBox class, which specifies
@@ -215,16 +212,20 @@ def group_num(subfindid, snapnum, sim):
     -------
     groupnum : int or array_like
       The SubhaloGrNr(s) of the given subhalos. Has same shape as the input
-      subfindid. SubhaloGrNr is the index of the halo in the group catalog.
+      subhaloid. SubhaloGrNr is the index of the halo in the group catalog.
+
+    snapnum : int
+      The snapshot number that contains the subhalo(s). Should be one number.
 
     """
-    if not np.isscalar(snapnum):
-        raise TypeError('The input snapnum should be one number,' +
-                        ' process subhalos in different snapshots separately.')
 
-    pass ###########add
+    rownum, chunknum = row_in_chunk(subhaloid, sim)
+    sim.load_by_file('SubLink', chunknum,
+                  fields = ['SubfindID', 'SnapNum'])
+    groupnum = sim.loaded['SubLink' + str(chunknum)]['SubhaloGrNr'][rownum]
+    snapnum = sim.loaded['SubLink' + str(chunknum)]['SnapNum'][rownum]
 
-    return groupnum
+    return groupnum, snapnum
 
 
 def is_subfind_central():
