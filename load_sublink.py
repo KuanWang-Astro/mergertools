@@ -39,21 +39,22 @@ def load_subhalo_only(subhaloid, fields, sim):
 
     rownum, chunknum = locate_object.row_in_chunk(subhaloid, sim)
     catkey = 'SubLink' + str(chunknum)
-    sim.load_data('SubLink', chunknum, fields)
+    sim.load_by_file('SubLink', chunknum, fields)
 
     subhalo = {}
     subhalo['Number'] = len(subhaloid)
     subhalo['ChunkNumber'] = chunknum
     subhalo['IndexInChunk'] = rownum
     for field in fields:
-        subhalo[field] = sim.preloaded[catkey][field][rownum]
+        subhalo[field] = sim.loaded[catkey][field][rownum]
 
     return subhalo
 
 
-def walk_tree(subhaloid, fields, sim, pointer):
+def walk_tree(subhaloid, fields, sim, pointer, numlimit=0):
     """ Walks the SubLink tree following a given pointer (e.g., DescendantID,
-    FirstProgenitorID, etc.) iteratively, starting from the given subhalo.
+    FirstProgenitorID, etc.) iteratively, starting from the given subhalo,
+    with an optional number limit of subhalos to load.
 
     Parameters
     ----------
@@ -72,6 +73,10 @@ def walk_tree(subhaloid, fields, sim, pointer):
       The name of the pointer to follow. Choose from the given set of pointer
       names in https://www.tng-project.org/data/docs/specifications/#sec4a.
 
+    numlimit : int, optional
+      The maximum number of subhalos to load along the pointer direction,
+      including the starting point. Default is 0, in which case the function
+      follows the pointer until there are no more subhalos ahead.
 
     Returns
     -------
@@ -108,26 +113,28 @@ def walk_tree(subhaloid, fields, sim, pointer):
     idx = [head_row]
 
     if pointer in noniter_pointers:
-        jump = sim.preloaded[catkey][pointer][head_row] - head
+        jump = sim.loaded[catkey][pointer][head_row] - head
         if jump != 0:
             head_row += jump
             idx.append(head_row)
-            head = sim.preloaded[catkey][pointer][head_row]
+            if numlimit and len(idx) == numlimit:
+                break
+            head = sim.loaded[catkey][pointer][head_row]
 
     else:
         while True:
-            jump = sim.preloaded[catkey][pointer][head_row] - head
+            jump = sim.loaded[catkey][pointer][head_row] - head
             head_row += jump
             if head_row < 0:
                 break
             idx.append(head_row)
-            head = sim.preloaded[catkey]['SubhaloID'][head_row]
+            head = sim.loaded[catkey]['SubhaloID'][head_row]
     chain = {}
     chain['Number'] = len(idx)
     chain['ChunkNumber'] = chunknum
     chain['IndexInChunk'] = np.array(idx)
     for field in fields:
-        chain[field] = sim.preloaded[catkey][field][idx]
+        chain[field] = sim.loaded[catkey][field][idx]
     return chain
 
 
@@ -231,7 +238,7 @@ def load_tree_progenitors(subhaloid, fields, sim, main_branch_only):
     progenitors['ChunkNumber'] = chunknum
     progenitors['IndexInChunk'] = np.arange(start, end + 1)
     for field in fields:
-        progenitors[field] = sim.preloaded[catkey][field][start : end + 1]
+        progenitors[field] = sim.loaded[catkey][field][start : end + 1]
     return progenitors
 
 
@@ -287,3 +294,7 @@ def load_tree_descendants(subhaloid, fields, sim, main_branch_only):
                 descendants[field] = descendants[field][:truncate + 1]
 
     return descendants
+
+
+def load_entire_tree():
+    pass

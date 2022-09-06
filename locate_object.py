@@ -37,8 +37,8 @@ def sublink_id(subfindid, snapnum, sim):
         raise TypeError('The input snapnum should be one number,' +
                         ' process subhalos in different snapshots separately.')
 
-    sim.load_data('SubLinkOffsets', snapnum, fields = ['SubhaloID'])
-    subhaloid = sim.preloaded['SubLinkOffsets'
+    sim.load_by_file('SubLinkOffsets', snapnum, fields = ['SubhaloID'])
+    subhaloid = sim.loaded['SubLinkOffsets'
                               + str(snapnum)]['SubhaloID'][subfindid]
 
     return subhaloid
@@ -109,11 +109,11 @@ def row_in_chunk(subhaloid, sim):
                          return_index = True)[1])[1]))
     if not np.isscalar(chunknum):
         chunknum = chunknum[0]
-    sim.load_data('SubLink', chunknum, fields = ['SubhaloID'])
-    rownum = np.searchsorted(sim.preloaded['SubLink' + str(chunknum)]\
+    sim.load_by_file('SubLink', chunknum, fields = ['SubhaloID'])
+    rownum = np.searchsorted(sim.loaded['SubLink' + str(chunknum)]\
                                           ['SubhaloID'],
                              subhaloid)
-    if subhaloid != sim.preloaded['SubLink' + str(chunknum)]['SubhaloID']\
+    if subhaloid != sim.loaded['SubLink' + str(chunknum)]['SubhaloID']\
                                  [rownum]:
         raise ValueError('SubhaloID does not exist.')
 
@@ -148,10 +148,10 @@ def subfind_id(subhaloid, sim):
     """
 
     rownum, chunknum = row_in_chunk(subhaloid, sim)
-    sim.load_data('SubLink', chunknum,
+    sim.load_by_file('SubLink', chunknum,
                   fields = ['SubfindID', 'SnapNum'])
-    subfindid = sim.preloaded['SubLink' + str(chunknum)]['SubfindID'][rownum]
-    snapnum = sim.preloaded['SubLink' + str(chunknum)]['SnapNum'][rownum]
+    subfindid = sim.loaded['SubLink' + str(chunknum)]['SubfindID'][rownum]
+    snapnum = sim.loaded['SubLink' + str(chunknum)]['SnapNum'][rownum]
 
     return subfindid, snapnum
 
@@ -186,8 +186,8 @@ def subfind_central(groupnum, snapnum, sim):
     if not np.isscalar(snapnum):
         raise TypeError('The input snapnum should be one number.')
 
-    sim.load_data('Group', snapnum, fields = ['GroupFirstSub'])
-    central = sim.preloaded['Group'
+    sim.load_by_file('Group', snapnum, fields = ['GroupFirstSub'])
+    central = sim.loaded['Group'
                             + str(snapnum)]['GroupFirstSub'][groupnum]
 
     return central
@@ -217,9 +217,6 @@ def group_num(subfindid, snapnum, sim):
       The SubhaloGrNr(s) of the given subhalos. Has same shape as the input
       subfindid. SubhaloGrNr is the index of the halo in the group catalog.
 
-    snapnum : int
-      The snapshot number that contains the halo(s).
-
     """
     if not np.isscalar(snapnum):
         raise TypeError('The input snapnum should be one number,' +
@@ -227,4 +224,12 @@ def group_num(subfindid, snapnum, sim):
 
     pass ###########add
 
-    return groupnum, snapnum
+    return groupnum
+
+
+def is_subfind_central():
+    pass
+
+
+def is_sublink_central():
+    pass
