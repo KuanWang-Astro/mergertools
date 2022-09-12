@@ -233,7 +233,7 @@ class SimulationBox:
         """
 
         if keep_catalogs:
-            self.loaded = {k: self.loaded[k] for k in keep_catalogs)}
+            self.loaded = {k: self.loaded[k] for k in keep_catalogs}
         else:
             self.loaded = {}
         gc.collect()
