@@ -117,8 +117,6 @@ def walk_tree(subhaloid, fields, sim, pointer, numlimit=0):
         if jump != 0:
             head_row += jump
             idx.append(head_row)
-            if numlimit and len(idx) == numlimit:
-                break
             head = sim.loaded[catkey][pointer][head_row]
 
     else:
@@ -128,6 +126,8 @@ def walk_tree(subhaloid, fields, sim, pointer, numlimit=0):
             if head_row < 0:
                 break
             idx.append(head_row)
+            if numlimit and len(idx) == numlimit:
+                break
             head = sim.loaded[catkey]['SubhaloID'][head_row]
     chain = {}
     chain['Number'] = len(idx)
