@@ -1,6 +1,6 @@
 """
 Module storing the 'mergertools.simulation_box.simulation_box' class, the
-class used for specifying the simulation box and preloading data.
+class used for specifying the simulation box and loading data.
 
 """
 
@@ -17,7 +17,7 @@ assert version.parse(h5py.__version__) >= version.parse('2.9'), \
 # tree, to speed up searches.
 
 class SimulationBox:
-    """ The class that stores the simulation box information and preloads
+    """ The class that stores the simulation box information and loads
     catalogs as dictionaries of numpy arrays.
 
     """
@@ -61,7 +61,7 @@ class SimulationBox:
         self.resolution = resolution
         self.dark = dark
         self.basepath = basepath
-        self.preloaded = {}
+        self.loaded = {}
 
 
     def data_path(self, catalog, filenum):
@@ -130,7 +130,7 @@ class SimulationBox:
         raise OSError('Invalid file path: {}'.format(fpath))
 
 
-    def load_data(self, catalog, filenum, fields):
+    def load_by_file(self, catalog, filenum, fields):
         """ Loads a data catalog into a dictionary, where keys are consistent
         with TNG column names and columns are converted to numpy arrays.
 
@@ -155,7 +155,7 @@ class SimulationBox:
         None :
           Constructs a dictionary containing columns of the specified catalog
           with keys consistent with TNG column names and columns converted to
-          numpy arrays. Appends result to the self.preloaded dictionary
+          numpy arrays. Appends result to the self.loaded dictionary
           with the input catalog and filenum as key.
 
 
@@ -168,13 +168,13 @@ class SimulationBox:
         if isinstance(fields, str):
             fields = [fields]
 
-        if catalog + str(filenum) in self.preloaded:
-            existing = set(self.preloaded[catalog + str(filenum)].keys())
+        if catalog + str(filenum) in self.loaded:
+            existing = set(self.loaded[catalog + str(filenum)].keys())
             fields = list(set(fields) - existing)
             if not fields: # all columns already loaded
                 return
         else:
-            self.preloaded[catalog + str(filenum)] = {}
+            self.loaded[catalog + str(filenum)] = {}
 
         path = self.data_path(catalog, filenum)
 
@@ -193,14 +193,14 @@ class SimulationBox:
                     for field in fields:
                         arr_dict[field] = np.array(f[field])
 
-        self.preloaded[catalog + str(filenum)] = {
-                    **self.preloaded[catalog + str(filenum)],
+        self.loaded[catalog + str(filenum)] = {
+                    **self.loaded[catalog + str(filenum)],
                     **arr_dict}
 
         return
 
 
-    def preload_max_set(self, fields):
+    def load_data(self, catalog, filenum, fields):
         """ to avoid opening the hdf5 files multiple times.
 
         Parameters
@@ -216,14 +216,14 @@ class SimulationBox:
         pass
 
 
-    def clear_preloaded(self, keep_catalogs=None):
-        """ Deletes part or all of the preloaded catalogs to release memory.
+    def clear_loaded(self, keep_catalogs=None):
+        """ Deletes part or all of the loaded catalogs to release memory.
 
         Parameters
         ----------
         keep_catalogs : list of str, optional
-          List of keys to the preloaded categories that are to be kept. The
-          rest will be deleted. Default is None, in which case all preloaded
+          List of keys to the loaded categories that are to be kept. The
+          rest will be deleted. Default is None, in which case all loaded
           catalogs will be deleted.
 
         Returns
@@ -233,8 +233,8 @@ class SimulationBox:
         """
 
         if keep_catalogs:
-            self.preloaded = {k: self.preloaded[k] for k in keep_catalogs)}
+            self.loaded = {k: self.loaded[k] for k in keep_catalogs)}
         else:
-            self.preloaded = {}
+            self.loaded = {}
         gc.collect()
         return
