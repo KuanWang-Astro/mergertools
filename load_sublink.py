@@ -181,7 +181,7 @@ def load_group_subhalos(subhaloid, fields, sim):
     return groupsubs
 
 
-def load_tree_progenitors(subhaloid, fields, sim, main_branch_only):
+def load_tree_progenitors(subhaloid, fields, sim, main_branch_only=False):
     """ Loads specified columns in the SubLink catalog for the progenitors
     of the given subhalo.
 
@@ -198,9 +198,9 @@ def load_tree_progenitors(subhaloid, fields, sim, main_branch_only):
       Instance of the simulation_box.SimulationBox class, which specifies
       the simulation box to work with.
 
-    main_branch_only : bool
+    main_branch_only : bool, optional
       If True, only load main branch progenitors of the given subhalo, if
-      False, load all progenitors.
+      False, load all progenitors. Default is False.
 
     Returns
     -------
@@ -242,7 +242,7 @@ def load_tree_progenitors(subhaloid, fields, sim, main_branch_only):
     return progenitors
 
 
-def load_tree_descendants(subhaloid, fields, sim, main_branch_only):
+def load_tree_descendants(subhaloid, fields, sim, main_branch_only=True):
     """ Loads specified columns in the SubLink catalog for the descendants
     of the given subhalo. A wrapper around `load_sublink.walk_tree`.
 
@@ -259,11 +259,11 @@ def load_tree_descendants(subhaloid, fields, sim, main_branch_only):
       Instance of the simulation_box.SimulationBox class, which specifies
       the simulation box to work with.
 
-    main_branch_only : bool
+    main_branch_only : bool, optional
       Each subhalo has at most one immediate descendant, but a subhalo is
       not necessarily the main branch progenitor of its descendant. If True,
       only load descendants for which the input subhalo is a main branch
-      progenitor. If False, load all descendants.
+      progenitor. If False, load all descendants. Default is True.
 
     Returns
     -------
