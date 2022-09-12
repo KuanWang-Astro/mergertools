@@ -230,7 +230,9 @@ def group_num(subhaloid, sim):
 
 def is_subfind_central():
     pass
+    # subfindid==GroupFirstSub
 
 
 def is_sublink_central():
     pass
+    # subhaloid==FirstSubhaloInFOFGroupID
