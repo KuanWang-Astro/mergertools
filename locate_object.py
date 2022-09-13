@@ -221,18 +221,38 @@ def group_num(subhaloid, sim):
 
     rownum, chunknum = row_in_chunk(subhaloid, sim)
     sim.load_by_file('SubLink', chunknum,
-                  fields = ['SubfindID', 'SnapNum'])
+                     fields = ['SubhaloGrNr', 'SnapNum'])
     groupnum = sim.loaded['SubLink' + str(chunknum)]['SubhaloGrNr'][rownum]
     snapnum = sim.loaded['SubLink' + str(chunknum)]['SnapNum'][rownum]
 
     return groupnum, snapnum
 
 
-def is_subfind_central():
-    pass
-    # subfindid==GroupFirstSub
+def is_subfind_central(subhaloid, sim):
+    """
+
+
+    """
+
+    rownum, chunknum = row_in_chunk(subhaloid, sim)
+    sim.load_by_file('SubLink', chunknum,
+                     fields = ['SubfindID', 'GroupFirstSub'])
+    subfindid = sim.loaded['SubLink' + str(chunknum)]['SubfindID'][rownum]
+    subfindcen = sim.loaded['SubLink' + str(chunknum)]['GroupFirstSub'][rownum]
+
+    return subfindid == subfindcen
 
 
 def is_sublink_central():
-    pass
-    # subhaloid==FirstSubhaloInFOFGroupID
+    """
+
+
+    """
+    rownum, chunknum = row_in_chunk(subhaloid, sim)
+    sim.load_by_file('SubLink', chunknum,
+                     fields = ['SubhaloID', 'FirstSubhaloInFOFGroupID'])
+    subhaloid = sim.loaded['SubLink' + str(chunknum)]['SubhaloID'][rownum]
+    sublinkcen = sim.loaded['SubLink' + str(chunknum)]\
+                           ['FirstSubhaloInFOFGroupID'][rownum]
+                           
+    return subhaloid == sublinkcen
