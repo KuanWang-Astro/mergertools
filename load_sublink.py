@@ -296,5 +296,43 @@ def load_tree_descendants(subhaloid, fields, sim, main_branch_only=True):
     return descendants
 
 
-def load_entire_tree():
-    pass
+def merge_tree_dicts(*trees, fields):
+    """ Merge multiple loaded trees that are from the same chunk and have the
+    same fields. If a subhalo appears multiple times, only one occurrence is
+    kept.
+
+    """
+
+    merged_tree = {}
+
+    cn = np.unique([tree['ChunkNumber'] for tree in trees])
+    if len(cn) != 1:
+        raise ValueError('Trees must be from the same chunk.')
+    merged_tree['ChunkNumber'] = cn[0]
+
+    field = 'IndexInChunk'
+    merged_tree[field] = np.concatenate([tree[field] for tree in trees])
+    mask = np.unique(merged_tree[field], return_index = True)[1]
+    merged_tree[field] = merged_tree[field]
+    merged_tree['Number'] = len(merged_tree[field])
+
+    for field in fields:
+        merged_tree[field] = np.concatenate([tree[field]
+                                             for tree in trees])[mask]
+
+    return merged_tree
+
+
+def load_entire_tree(subhaloid, fields, sim,
+                     progenitor_main_branch_only=False,
+                     descendant_main_branch_only=True):
+    """ wrapper around `merge_tree_dicts`, `load_tree_progenitors`, and
+    `load_tree_descendants`.
+
+    """
+
+    return merge_tree_dicts(load_tree_progenitors(subhaloid, fields, sim,
+                                                  progenitor_main_branch_only),
+                            load_tree_descendants(subhaloid, fields, sim,
+                                                  descendant_main_branch_only),
+                            fields)
