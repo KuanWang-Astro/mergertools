@@ -113,9 +113,9 @@ def row_in_chunk(subhaloid, sim):
     rownum = np.searchsorted(sim.loaded['SubLink' + str(chunknum)]\
                                           ['SubhaloID'],
                              subhaloid)
-    if subhaloid != sim.loaded['SubLink' + str(chunknum)]['SubhaloID']\
-                                 [rownum]:
-        raise ValueError('SubhaloID does not exist.')
+    if np.any(subhaloid != sim.loaded['SubLink' + str(chunknum)]['SubhaloID']\
+                                     [rownum]):
+        raise ValueError('Some of the SubhaloIDs do not exist.')
 
     return rownum, chunknum
 
@@ -254,5 +254,5 @@ def is_sublink_central():
     subhaloid = sim.loaded['SubLink' + str(chunknum)]['SubhaloID'][rownum]
     sublinkcen = sim.loaded['SubLink' + str(chunknum)]\
                            ['FirstSubhaloInFOFGroupID'][rownum]
-                           
+
     return subhaloid == sublinkcen
