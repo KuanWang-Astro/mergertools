@@ -308,12 +308,12 @@ def merge_tree_dicts(*trees, fields):
     cn = np.unique([tree['ChunkNumber'] for tree in trees])
     if len(cn) != 1:
         raise ValueError('Trees must be from the same chunk.')
-    merged_tree['ChunkNumber'] = cn[0]
 
     field = 'IndexInChunk'
     idx = np.concatenate([tree[field] for tree in trees])
     mask = np.unique(idx, return_index = True)[1]
     merged_tree['Number'] = len(mask)
+    merged_tree['ChunkNumber'] = cn[0]
     merged_tree[field] = idx[mask]
 
     for field in fields:
