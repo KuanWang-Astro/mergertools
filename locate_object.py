@@ -59,7 +59,9 @@ def chunk_num(subhaloid):
     -------
     chunknum : int or array_like
       The SubLink chunk number of the given subhalos. Has same shape as the
-      input subhaloid.
+      input subhaloid. If all the subhaloids are -1, raise error. If some of
+      the subhaloids are -1, assign to them the chunk number of the first
+      subhalo that's not -1.
 
     samechunk : bool
       True if all the given subhalos are in the same tree file chunk, False
@@ -68,9 +70,16 @@ def chunk_num(subhaloid):
     """
 
     if np.isscalar(subhaloid):
+        if subhaloid == -1:
+            raise ValueError('SubhaloID cannot all be -1.')
         return subhaloid // 10000000000000000, True
 
     chunknum = np.array(subhaloid) // 10000000000000000
+    minus_one = (subhaloid == -1)
+    if np.all(minus_one):
+        raise ValueError('SubhaloID cannot all be -1.')
+    if np.any(minus_one):
+        chunknum[minus_one] = chunknum[~minus_one][0]
     samechunk = len(np.unique(chunknum)) == 1
 
     return chunknum, samechunk
@@ -93,7 +102,7 @@ def row_in_chunk(subhaloid, sim):
     -------
     rownum : int or array_like
       The row indices of the given subhalos in the tree chunk. Has same shape
-      as the input subhaloid.
+      as the input subhaloid. For subhaloids that are -1, return -1 as rownum.
 
     chunknum : int
       The SubLink chunk number of the given subhalos. Subhalos required to be
@@ -104,18 +113,21 @@ def row_in_chunk(subhaloid, sim):
     if not samechunk:
         raise ValueError('The subhalos should be in the same tree chunk,' +
                          ' process subhalos in different chunks separately.' +
-                         ' Index of first subhalo in a different chunk ' +
+                         ' Index of the first subhalo in a different chunk ' +
                          'is {}.'.format(np.sort(np.unique(chunknum,
                          return_index = True)[1])[1]))
     if not np.isscalar(chunknum):
         chunknum = chunknum[0]
     sim.load_by_file('SubLink', chunknum, fields = ['SubhaloID'])
     rownum = np.searchsorted(sim.loaded['SubLink' + str(chunknum)]\
-                                          ['SubhaloID'],
+                                       ['SubhaloID'],
                              subhaloid)
-    if np.any(subhaloid != sim.loaded['SubLink' + str(chunknum)]['SubhaloID']\
-                                     [rownum]):
-        raise ValueError('Some of the SubhaloIDs do not exist.')
+    minus_one = (subhaloid == -1)
+    rownum[minus_one] = -1
+    if np.any(subhaloid[~minus_one] !=
+              sim.loaded['SubLink' + str(chunknum)]['SubhaloID']\
+                        [rownum[~minus_one]]):
+        raise ValueError('Some of the SubhaloIDs do not exist.'))
 
     return rownum, chunknum
 
