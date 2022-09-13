@@ -311,10 +311,10 @@ def merge_tree_dicts(*trees, fields):
     merged_tree['ChunkNumber'] = cn[0]
 
     field = 'IndexInChunk'
-    merged_tree[field] = np.concatenate([tree[field] for tree in trees])
-    mask = np.unique(merged_tree[field], return_index = True)[1]
-    merged_tree[field] = merged_tree[field][mask]
-    merged_tree['Number'] = len(merged_tree[field])
+    idx = np.concatenate([tree[field] for tree in trees])
+    mask = np.unique(idx, return_index = True)[1]
+    merged_tree['Number'] = len(mask)
+    merged_tree[field] = idx[mask]
 
     for field in fields:
         merged_tree[field] = np.concatenate([tree[field]
