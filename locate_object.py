@@ -127,7 +127,7 @@ def row_in_chunk(subhaloid, sim):
     if np.any(subhaloid[~minus_one] !=
               sim.loaded['SubLink' + str(chunknum)]['SubhaloID']\
                         [rownum[~minus_one]]):
-        raise ValueError('Some of the SubhaloIDs do not exist.'))
+        raise ValueError('Some of the SubhaloIDs do not exist.')
 
     return rownum, chunknum
 
