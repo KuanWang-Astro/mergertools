@@ -335,4 +335,4 @@ def load_entire_tree(subhaloid, fields, sim,
                                                   progenitor_main_branch_only),
                             load_tree_descendants(subhaloid, fields, sim,
                                                   descendant_main_branch_only),
-                            fields)
+                            fields = fields)
