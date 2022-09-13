@@ -327,12 +327,12 @@ def load_entire_tree(subhaloid, fields, sim,
                      progenitor_main_branch_only=False,
                      descendant_main_branch_only=True):
     """ wrapper around `merge_tree_dicts`, `load_tree_progenitors`, and
-    `load_tree_descendants`.
+    `load_tree_descendants`. sorted by SubhaloID.
 
     """
 
     return merge_tree_dicts(load_tree_progenitors(subhaloid, fields, sim,
-                                                  progenitor_main_branch_only),
+                                             progenitor_main_branch_only),
                             load_tree_descendants(subhaloid, fields, sim,
-                                                  descendant_main_branch_only),
+                                             descendant_main_branch_only),
                             fields = fields)
