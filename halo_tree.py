@@ -69,7 +69,7 @@ def progenitor_halos(groupnum, snapnum, sim):
                            tree_halos[breaks[i] : breaks[i + 1]]))
                            for i in range(len(breaks) - 1)], dtype = object)
 
-    progenitor_halos_dict = {'Number': len(halos_uniq),
+    progenitor_halos_dict = {'Number': len(halos_uniq[0]),
                              'HaloGroupNum': halos_uniq[0],
                              'HaloSnapNum': halos_uniq[1],
                              'ProgenitorGroupNum': halos_prog[:, 0],
