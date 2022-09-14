@@ -75,7 +75,7 @@ def progenitor_halos(groupnum, snapnum, sim):
                              'ProgenitorGroupNum': halos_prog[:, 0],
                              'ProgenitorSnapNum': halos_prog[:, 1]}
 
-    return halos_uniq[0], halos_uniq[1], halos_prog[:, 0], halos_prog[:, 1]
+    return progenitor_halos_dict
 
 
 # data product -- all halo trees?
