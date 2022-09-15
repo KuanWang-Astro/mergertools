@@ -181,6 +181,52 @@ def load_group_subhalos(subhaloid, fields, sim):
     return groupsubs
 
 
+def load_immediate_progenitors(subhaloid, fields, sim):
+    """ Loads specified columns in the SubLink catalog for the immediate
+    progenitors of the given subhalo.
+
+    Parameters
+    ----------
+    subhaloid :  int
+      The SubhaloID of the subhalo whose progenitors to load. SubhaloID is
+      the SubLink index and is unique throughout all snapshots.
+
+    fields : list of str
+      The columns to load from the table.
+
+    sim : class obj
+      Instance of the simulation_box.SimulationBox class, which specifies
+      the simulation box to work with.
+
+    Returns
+    -------
+    immediate_progenitors : dict
+        Dictionary containing the specified fields for the immediate
+        progenitors of the given subhalo. Subhalos are ordered along the
+        direction of the NextProgenitorID pointer, i.e., by MassHistory.
+        Entries are stored as numpy arrays. Also includes the number of
+        subhalos, the SubLink chunk number in which the subhalos are
+        stored, and the row indices of the loaded subhalos in the chunk.
+        If subhalo has no progenitors, return None.
+
+    """
+
+    if not np.isscalar(subhaloid):
+        raise TypeError('Process one subhalo at a time.')
+
+    fields_ = list(set(fields).union(set(['SubhaloID'])))
+    firstprogenitorid = walk_tree(subhaloid, fields_, sim,
+                                  'FirstProgenitorID', numlimit = 2)\
+                                  ['SubhaloID'][-1]
+    if firstprogenitorid == subhaloid:
+        return None
+
+    immediate_progenitors = walk_tree(firstprogenitorid, fields, sim,
+                                      'NextProgenitorID')
+
+    return immediate_progenitors
+
+
 def load_tree_progenitors(subhaloid, fields, sim, main_branch_only=False):
     """ Loads specified columns in the SubLink catalog for the progenitors
     of the given subhalo.
