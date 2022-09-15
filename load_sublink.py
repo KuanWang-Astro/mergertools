@@ -223,6 +223,7 @@ def load_immediate_progenitors(subhaloid, fields, sim):
         immediate_progenitors['IndexInChunk'] = np.array([])
         for field in fields:
             immediate_progenitors[field] = np.array([])
+        return immediate_progenitors
 
     immediate_progenitors = walk_tree(firstprogenitor['SubhaloID'][-1],
                                       fields, sim,
