@@ -207,7 +207,6 @@ def load_immediate_progenitors(subhaloid, fields, sim):
         Entries are stored as numpy arrays. Also includes the number of
         subhalos, the SubLink chunk number in which the subhalos are
         stored, and the row indices of the loaded subhalos in the chunk.
-        If subhalo has no progenitors, return None.
 
     """
 
@@ -215,13 +214,18 @@ def load_immediate_progenitors(subhaloid, fields, sim):
         raise TypeError('Process one subhalo at a time.')
 
     fields_ = list(set(fields).union(set(['SubhaloID'])))
-    firstprogenitorid = walk_tree(subhaloid, fields_, sim,
-                                  'FirstProgenitorID', numlimit = 2)\
-                                  ['SubhaloID'][-1]
-    if firstprogenitorid == subhaloid:
-        return None
+    firstprogenitor = walk_tree(subhaloid, fields_, sim,
+                                  'FirstProgenitorID', numlimit = 2)
+    if firstprogenitor['SubhaloID'][-1] == subhaloid:
+        immediate_progenitors = {}
+        immediate_progenitors['Number'] = 0
+        immediate_progenitors['ChunkNumber'] = firstprogenitor['ChunkNumber']
+        immediate_progenitors['IndexInChunk'] = np.array([])
+        for field in fields:
+            immediate_progenitors[field] = np.array([])
 
-    immediate_progenitors = walk_tree(firstprogenitorid, fields, sim,
+    immediate_progenitors = walk_tree(firstprogenitor['SubhaloID'][-1],
+                                      fields, sim,
                                       'NextProgenitorID')
 
     return immediate_progenitors
