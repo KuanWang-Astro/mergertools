@@ -220,9 +220,10 @@ def load_immediate_progenitors(subhaloid, fields, sim):
         immediate_progenitors = {}
         immediate_progenitors['Number'] = 0
         immediate_progenitors['ChunkNumber'] = firstprogenitor['ChunkNumber']
-        immediate_progenitors['IndexInChunk'] = np.array([])
+        immediate_progenitors['IndexInChunk'] = np.array([], dtype = 'int64')
         for field in fields:
-            immediate_progenitors[field] = np.array([])
+            immediate_progenitors[field] = np.array([],
+                  dtype = firstprogenitor[field].dtype)
         return immediate_progenitors
 
     immediate_progenitors = walk_tree(firstprogenitor['SubhaloID'][-1],
