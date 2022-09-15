@@ -14,10 +14,76 @@ def _groupnum_sn_1to2(groupsnapnum):
     return [groupsnapnum % 1000000000000,
             groupsnapnum // 1000000000000]
 
+
 def _groupnum_sn_2to1(groupnum, snapnum):
     return snapnum * 1000000000000 + groupnum
 
-def load_fof_group(groupnum, snapnum, fields, sim):
+
+def immediate_progenitor_halos(groupnum, snapnum, sim):
+    """ Finds the immediate progenitor halos of the given halo,
+    sorted by virial mass.
+
+    """
+
+    central_sfid = locate_object.subfind_central(groupnum, snapnum, sim)
+    central_shid = locate_object.sublink_id(central_sfid, snapnum, sim)
+    fields = ['SubhaloID', 'Group_M_TopHat200', 'SubhaloGrNr']
+    subhalos = load_sublink.load_group_subhalos(central_shid,
+                                                fields, sim)['SubhaloID']
+
+    immediate_progenitor_subhalos = load_sublink.merge_tree_dicts(
+                                 *[load_sublink.load_immediate_progenitors(
+                                             subhalo, fields, sim)
+                                 for subhalo in subhalos],
+                                 fields = fields)
+
+    immediate_progenitors = _groupnum_sn_2to1(*locate_object.group_num(
+                                immediate_progenitor_subhalos['SubhaloID'],
+                                sim))
+    immediate_progenitors, idx = np.unique(immediate_progenitors,
+                                           return_index = True)
+    progenitor_masses = immediate_progenitor_subhalos['Group_M_TopHat200'][idx]
+    order = np.argsort(-progenitor_masses)
+
+    immediate_progenitors = _groupnum_sn_1to2(immediate_progenitors[order])
+    progenitor_masses = progenitor_masses[order]
+
+    return immediate_progenitors, progenitor_masses
+
+
+def immediate_descendant_halos(groupnum, snapnum, sim):
+    """ Finds the immediate descendant halos of the given halo,
+    sorted by virial mass.
+
+    """
+
+    central_sfid = locate_object.subfind_central(groupnum, snapnum, sim)
+    central_shid = locate_object.sublink_id(central_sfid, snapnum, sim)
+    fields = ['SubhaloID', 'Group_M_TopHat200', 'SubhaloGrNr']
+    subhalos = load_sublink.load_group_subhalos(central_shid,
+                                                fields, sim)['SubhaloID']
+
+    immediate_descendant_subhalos = load_sublink.merge_tree_dicts(
+                                 *[load_sublink.load_immediate_descendant(
+                                             subhalo, fields, sim)
+                                 for subhalo in subhalos],
+                                 fields = fields)
+
+    immediate_descendants = _groupnum_sn_2to1(*locate_object.group_num(
+                                immediate_descendant_subhalos['SubhaloID'],
+                                sim))
+    immediate_descendants, idx = np.unique(immediate_descendants,
+                                           return_index = True)
+    descendant_masses = immediate_descendant_subhalos['Group_M_TopHat200'][idx]
+    order = np.argsort(-descendant_masses)
+
+    immediate_descendants = _groupnum_sn_1to2(immediate_descendants[order])
+    descendant_masses = descendant_masses[order]
+
+    return immediate_descendants, descendant_masses
+
+
+def main_merger_tree():
     pass
 
 
@@ -42,7 +108,7 @@ def progenitor_halos(groupnum, snapnum, sim):
     central_sfid = locate_object.subfind_central(groupnum, snapnum, sim)
     central_shid = locate_object.sublink_id(central_sfid, snapnum, sim)
     fields = ['SubhaloID', 'DescendantID', 'LastProgenitorID',
-              'Group_M_TopHat200', 'SubhaloGrNr']
+              'Group_M_TopHat200']
     subhalos = load_sublink.load_group_subhalos(central_shid,
                                                 fields, sim)['SubhaloID']
 
@@ -78,12 +144,6 @@ def progenitor_halos(groupnum, snapnum, sim):
     return progenitor_halos_dict
 
 
-# data product -- all halo trees?
-
 
 def descendant_halos():
-    pass
-
-
-def construct_binary_halo_tree():
     pass
