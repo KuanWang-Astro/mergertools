@@ -13,7 +13,7 @@ def load_subhalo_only(subhaloid, fields, sim):
 
     Parameters
     ----------
-    subhaloid :  int or array_like
+    subhaloid : int or array_like
       The SubhaloID(s) of the subhalo(s) to load. SubhaloID is the SubLink
       index and is unique throughout all snapshots.
 
@@ -58,7 +58,7 @@ def walk_tree(subhaloid, fields, sim, pointer, numlimit=0):
 
     Parameters
     ----------
-    subhaloid :  int
+    subhaloid : int
       The SubhaloID of the subhalo to start from. SubhaloID is the SubLink
       index and is unique throughout all snapshots.
 
@@ -145,7 +145,7 @@ def load_group_subhalos(subhaloid, fields, sim):
 
     Parameters
     ----------
-    subhaloid :  int
+    subhaloid : int
       The SubhaloID of the subhalo whose group to load. SubhaloID is the
       SubLink index and is unique throughout all snapshots.
 
@@ -187,7 +187,7 @@ def load_immediate_progenitors(subhaloid, fields, sim):
 
     Parameters
     ----------
-    subhaloid :  int
+    subhaloid : int
       The SubhaloID of the subhalo whose progenitors to load. SubhaloID is
       the SubLink index and is unique throughout all snapshots.
 
@@ -233,13 +233,67 @@ def load_immediate_progenitors(subhaloid, fields, sim):
     return immediate_progenitors
 
 
+def load_immediate_descendant(subhaloid, fields, sim):
+    """ Loads specified columns in the SubLink catalog for the immediate
+    descendant of the given subhalo.
+
+    Parameters
+    ----------
+    subhaloid : int
+      The SubhaloID of the subhalo whose progenitors to load. SubhaloID is
+      the SubLink index and is unique throughout all snapshots.
+
+    fields : list of str
+      The columns to load from the table.
+
+    sim : class obj
+      Instance of the simulation_box.SimulationBox class, which specifies
+      the simulation box to work with.
+
+    Returns
+    -------
+    immediate_descendant : dict
+        Dictionary containing the specified fields for the immediate
+        descendant (each subhalo can have 0 or 1) of the given subhalo.
+        Entries are stored as numpy arrays. Also includes the number of
+        subhalos (0/1), the SubLink chunk number in which the subhalo is
+        stored, and the row index of the loaded subhalo in the chunk.
+
+    """
+
+    if not np.isscalar(subhaloid):
+        raise TypeError('Process one subhalo at a time.')
+
+    fields_ = list(set(fields).union(set(['SubhaloID'])))
+    descendant = walk_tree(subhaloid, fields_, sim,
+                           'DescendantID', numlimit = 2)
+    if descendant['SubhaloID'][-1] == subhaloid:
+        immediate_descendant = {}
+        immediate_descendant['Number'] = 0
+        immediate_descendant['ChunkNumber'] = descendant['ChunkNumber']
+        immediate_descendant['IndexInChunk'] = np.array([], dtype = 'int64')
+        for field in fields:
+            immediate_descendant[field] = np.array([],
+                      dtype = descendant[field].dtype)
+        return immediate_progenitors
+
+    immediate_descendant = {}
+    immediate_descendant['Number'] = 1
+    immediate_descendant['ChunkNumber'] = descendant['ChunkNumber']
+    immediate_descendant['IndexInChunk'] = descendant['IndexInChunk'][1:]
+    for field in fields:
+        immediate_descendant[field] = descendant[field][1:]
+
+    return immediate_progenitors
+
+
 def load_tree_progenitors(subhaloid, fields, sim, main_branch_only=False):
     """ Loads specified columns in the SubLink catalog for the progenitors
     of the given subhalo.
 
     Parameters
     ----------
-    subhaloid :  int
+    subhaloid : int
       The SubhaloID of the subhalo whose progenitors to load. SubhaloID is
       the SubLink index and is unique throughout all snapshots.
 
@@ -300,7 +354,7 @@ def load_tree_descendants(subhaloid, fields, sim, main_branch_only=True):
 
     Parameters
     ----------
-    subhaloid :  int
+    subhaloid : int
       The SubhaloID of the subhalo whose descendants to load. SubhaloID is
       the SubLink index and is unique throughout all snapshots.
 
