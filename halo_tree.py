@@ -38,6 +38,9 @@ def immediate_progenitor_halos(groupnum, snapnum, sim,
                                              subhalo, fields, sim)
                                  for subhalo in subhalos],
                                  fields = fields)
+    if immediate_progenitor_subhalos['Number'] == 0:
+        return np.array([], dtype = 'int64'), np.array([], dtype = 'int64'),\
+               np.array([], dtype = '<f4')
 
     immediate_progenitors = _groupnum_sn_2to1(*locate_object.group_num(
                                 immediate_progenitor_subhalos['SubhaloID'],
@@ -79,6 +82,9 @@ def immediate_descendant_halos(groupnum, snapnum, sim,
                                              subhalo, fields, sim)
                                  for subhalo in subhalos],
                                  fields = fields)
+    if immediate_descendant_subhalos['Number'] == 0:
+        return np.array([], dtype = 'int64'), np.array([], dtype = 'int64'),\
+               np.array([], dtype = '<f4')
 
     immediate_descendants = _groupnum_sn_2to1(*locate_object.group_num(
                                 immediate_descendant_subhalos['SubhaloID'],
