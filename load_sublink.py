@@ -275,7 +275,7 @@ def load_immediate_descendant(subhaloid, fields, sim):
         for field in fields:
             immediate_descendant[field] = np.array([],
                       dtype = descendant[field].dtype)
-        return immediate_progenitors
+        return immediate_descendant
 
     immediate_descendant = {}
     immediate_descendant['Number'] = 1
@@ -284,7 +284,7 @@ def load_immediate_descendant(subhaloid, fields, sim):
     for field in fields:
         immediate_descendant[field] = descendant[field][1:]
 
-    return immediate_progenitors
+    return immediate_descendant
 
 
 def load_tree_progenitors(subhaloid, fields, sim, main_branch_only=False):

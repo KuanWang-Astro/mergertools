@@ -51,7 +51,7 @@ def chunk_num(subhaloid):
 
     Parameters
     ----------
-    subhaloid :  int or array_like
+    subhaloid : int or array_like
       The SubhaloID(s) of the subhalos to locate. SubhaloID is the SubLink
       index and is unique throughout all snapshots.
 
@@ -85,7 +85,7 @@ def row_in_chunk(subhaloid, sim):
 
     Parameters
     ----------
-    subhaloid :  int or array_like
+    subhaloid : int or array_like
       The SubhaloID(s) of the subhalos to locate. SubhaloID is the SubLink
       index and is unique throughout all snapshots.
 
@@ -130,7 +130,7 @@ def subfind_id(subhaloid, sim):
 
     Parameters
     ----------
-    subhaloid :  int or array_like
+    subhaloid : int or array_like
       The SubhaloID(s) of the subhalos to convert. SubhaloID is the SubLink
       index and is unique throughout all snapshots.
 
@@ -204,7 +204,7 @@ def group_num(subhaloid, sim):
 
     Parameters
     ----------
-    subhaloid :  int or array_like
+    subhaloid : int or array_like
       The SubhaloID(s) of the subhalos to find group numbers for. SubhaloID
       is the SubLink index and is unique throughout all snapshots.
 
