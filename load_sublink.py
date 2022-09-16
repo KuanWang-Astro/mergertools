@@ -138,7 +138,7 @@ def walk_tree(subhaloid, fields, sim, pointer, numlimit=0):
     return chain
 
 
-def load_group_subhalos(subhaloid, fields, sim):
+def load_group_subhalos(subhaloid, fields, sim, numlimit=0):
     """ Loads specified columns in the SubLink catalog for all subhalos in
     the same FOF group as the given subhalo, ordered by the MassHistory
     column. A wrapper around `load_sublink.walk_tree`.
@@ -176,7 +176,7 @@ def load_group_subhalos(subhaloid, fields, sim):
                                   'FirstSubhaloInFOFGroupID')['SubhaloID'][-1]
 
     groupsubs = walk_tree(primary_subhaloid, fields, sim,
-                          'NextSubhaloInFOFGroupID')
+                          'NextSubhaloInFOFGroupID', numlimit = numlimit)
 
     return groupsubs
 

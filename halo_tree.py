@@ -20,6 +20,7 @@ def _groupnum_sn_2to1(groupnum, snapnum):
 
 
 def immediate_progenitor_halos(groupnum, snapnum, sim,
+                               subhalo_numlimit=0,
                                previous_snapshot_only=True):
     """ Finds the immediate progenitor halos of the given halo,
     sorted by virial mass.
@@ -30,7 +31,7 @@ def immediate_progenitor_halos(groupnum, snapnum, sim,
     central_shid = locate_object.sublink_id(central_sfid, snapnum, sim)
     fields = ['SubhaloID', 'Group_M_TopHat200', 'SubhaloGrNr']
     subhalos = load_sublink.load_group_subhalos(central_shid,
-                                                fields, sim)['SubhaloID']
+                              fields, sim = subhalo_numlimit)['SubhaloID']
 
     immediate_progenitor_subhalos = load_sublink.merge_tree_dicts(
                                  *[load_sublink.load_immediate_progenitors(
