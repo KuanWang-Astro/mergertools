@@ -19,7 +19,8 @@ def _groupnum_sn_2to1(groupnum, snapnum):
     return snapnum * 1000000000000 + groupnum
 
 
-def immediate_progenitor_halos(groupnum, snapnum, sim):
+def immediate_progenitor_halos(groupnum, snapnum, sim,
+                               previous_snapshot_only=True):
     """ Finds the immediate progenitor halos of the given halo,
     sorted by virial mass.
 
@@ -48,10 +49,18 @@ def immediate_progenitor_halos(groupnum, snapnum, sim):
     immediate_progenitors = _groupnum_sn_1to2(immediate_progenitors[order])
     progenitor_masses = progenitor_masses[order]
 
-    return immediate_progenitors, progenitor_masses
+    if previous_snapshot_only:
+        mask = immediate_progenitors[1] == snapnum - 1
+        immediate_progenitors[0] = immediate_progenitors[0][mask]
+        immediate_progenitors[1] = immediate_progenitors[1][mask]
+        progenitor_masses = progenitor_masses[mask]
+
+    return immediate_progenitors[0], immediate_progenitors[1],\
+           progenitor_masses
 
 
-def immediate_descendant_halos(groupnum, snapnum, sim):
+def immediate_descendant_halos(groupnum, snapnum, sim,
+                               next_snapshot_only=True):
     """ Finds the immediate descendant halos of the given halo,
     sorted by virial mass.
 
@@ -80,7 +89,14 @@ def immediate_descendant_halos(groupnum, snapnum, sim):
     immediate_descendants = _groupnum_sn_1to2(immediate_descendants[order])
     descendant_masses = descendant_masses[order]
 
-    return immediate_descendants, descendant_masses
+    if next_snapshot_only:
+        mask = immediate_descendants[1] == snapnum + 1
+        immediate_descendants[0] = immediate_descendants[0][mask]
+        immediate_descendants[1] = immediate_descendants[1][mask]
+        descendant_masses = descendant_masses[mask]
+
+    return immediate_descendants[0], immediate_descendants[1],\
+           descendant_masses
 
 
 def main_merger_tree():
