@@ -31,7 +31,7 @@ def immediate_progenitor_halos(groupnum, snapnum, sim,
     central_shid = locate_object.sublink_id(central_sfid, snapnum, sim)
     fields = ['SubhaloID', 'Group_M_TopHat200', 'SubhaloGrNr']
     subhalos = load_sublink.load_group_subhalos(central_shid,
-                              fields, sim = subhalo_numlimit)['SubhaloID']
+                    fields, sim, numlimit = subhalo_numlimit)['SubhaloID']
 
     immediate_progenitor_subhalos = load_sublink.merge_tree_dicts(
                                  *[load_sublink.load_immediate_progenitors(
@@ -72,7 +72,7 @@ def immediate_descendant_halos(groupnum, snapnum, sim,
     central_shid = locate_object.sublink_id(central_sfid, snapnum, sim)
     fields = ['SubhaloID', 'Group_M_TopHat200', 'SubhaloGrNr']
     subhalos = load_sublink.load_group_subhalos(central_shid,
-                              fields, sim = subhalo_numlimit)['SubhaloID']
+                    fields, sim, numlimit = subhalo_numlimit)['SubhaloID']
 
     immediate_descendant_subhalos = load_sublink.merge_tree_dicts(
                                  *[load_sublink.load_immediate_descendant(
