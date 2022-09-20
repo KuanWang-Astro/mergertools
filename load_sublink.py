@@ -8,7 +8,7 @@ import numpy as np
 import simulation_box
 import locate_object
 
-def load_subhalo_only(subhaloid, fields, sim):
+def load_single_subhalo(subhaloid, fields, sim):
     """ Loads specified columns in the SubLink catalog for a given subhalo.
 
     Parameters
@@ -103,7 +103,7 @@ def walk_tree(subhaloid, fields, sim, pointer, numlimit=0):
                                                   noniter_pointers))
 
     fields_ = list(set(fields).union(set([pointer])))
-    subhalo = load_subhalo_only(subhaloid, fields_, sim)
+    subhalo = load_single_subhalo(subhaloid, fields_, sim)
     chunknum = subhalo['ChunkNumber']
     rownum = subhalo['IndexInChunk'][0]
     catkey = 'SubLink' + str(chunknum)
@@ -326,7 +326,7 @@ def load_tree_progenitors(subhaloid, fields, sim, main_branch_only=False):
 
     fields_ = list(set(fields).union(set(['MainLeafProgenitorID',
                                           'LastProgenitorID'])))
-    subhalo = load_subhalo_only(subhaloid, fields_, sim)
+    subhalo = load_single_subhalo(subhaloid, fields_, sim)
     chunknum = subhalo['ChunkNumber']
     rownum = subhalo['IndexInChunk'][0]
     catkey = 'SubLink' + str(chunknum)
