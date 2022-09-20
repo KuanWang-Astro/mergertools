@@ -7,6 +7,8 @@ import numpy as np
 
 import simulation_box
 
+_sl_chunk_const = 10000000000000000
+
 def sublink_id(subfindid, snapnum, sim):
     """ Converts subhalo SubfindID(s) to SubhaloID(s) given the snapshot.
     Processes any number of subhalos in the same snapshot.
@@ -70,9 +72,9 @@ def chunk_num(subhaloid):
     if np.isscalar(subhaloid):
         if subhaloid == -1:
             raise ValueError('SubhaloID cannot be -1.')
-        return subhaloid // 10000000000000000, True
+        return subhaloid // _sl_chunk_const, True
 
-    chunknum = np.array(subhaloid) // 10000000000000000
+    chunknum = np.array(subhaloid) // _sl_chunk_const
     if np.any(subhaloid == -1):
         raise ValueError('SubhaloID cannot be -1.')
     samechunk = len(np.unique(chunknum)) == 1
