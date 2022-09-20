@@ -106,6 +106,7 @@ def row_in_chunk(subhaloid, sim):
       in the same chunk.
 
     """
+
     chunknum, samechunk = chunk_num(subhaloid)
     if not samechunk:
         raise ValueError('The subhalos should be in the same tree chunk,' +
@@ -126,7 +127,22 @@ def row_in_chunk(subhaloid, sim):
     return rownum, chunknum
 
 
-def subfind_id(subhaloid, sim):
+def _chunk_num(subhaloid):
+    if np.isscalar(subhaloid):
+        return  subhaloid // _sl_chunk_const
+    return subhaloid[0] // _sl_chunk_const
+
+
+def _row_in_chunk(subhaloid, sim):
+    chunknum = _chunk_num(subhaloid)
+    sim.load_by_file('SubLink', chunknum, fields = ['SubhaloID'])
+    rownum = np.searchsorted(sim.loaded['SubLink' + str(chunknum)]\
+                                       ['SubhaloID'],
+                             subhaloid)
+    return rownum, chunknum
+
+
+def subfind_id(subhaloid, sim, internal=False):
     """ Converts subhalo SubhaloID(s) to SubfindID(s) and SnapNum(s).
     Processes any number of subhalos in the same tree chunk.
 
@@ -139,6 +155,10 @@ def subfind_id(subhaloid, sim):
     sim : class obj
       Instance of the simulation_box.SimulationBox class, which specifies the
       simulation box to work with.
+
+    internal : bool
+      Whether this function is called internally. User should always leave it
+      as False.
 
     Returns
     -------
@@ -153,7 +173,10 @@ def subfind_id(subhaloid, sim):
 
     """
 
-    rownum, chunknum = row_in_chunk(subhaloid, sim)
+    if internal:
+        rownum, chunknum = _row_in_chunk(subhaloid, sim)
+    else:
+        rownum, chunknum = row_in_chunk(subhaloid, sim)
     sim.load_by_file('SubLink', chunknum,
                   fields = ['SubfindID', 'SnapNum'])
     subfindid = sim.loaded['SubLink' + str(chunknum)]['SubfindID'][rownum]
@@ -199,7 +222,7 @@ def subfind_central(groupnum, snapnum, sim):
     return central
 
 
-def group_num(subhaloid, sim):
+def group_num(subhaloid, sim, internal=False):
     """ Identifies the index(es) of the halo(s) hosting the input subhalo(s)
     given the SubhaloID(s) and snapshot. Processes any number of subhalos in
     the same tree chunk.
@@ -214,6 +237,10 @@ def group_num(subhaloid, sim):
       Instance of the simulation_box.SimulationBox class, which specifies
       the simulation box to work with.
 
+    internal : bool
+      Whether this function is called internally. User should always leave it
+      as False.
+
     Returns
     -------
     groupnum : int or array_like
@@ -225,7 +252,10 @@ def group_num(subhaloid, sim):
 
     """
 
-    rownum, chunknum = row_in_chunk(subhaloid, sim)
+    if internal:
+        rownum, chunknum = _row_in_chunk(subhaloid, sim)
+    else:
+        rownum, chunknum = row_in_chunk(subhaloid, sim)
     sim.load_by_file('SubLink', chunknum,
                      fields = ['SubhaloGrNr', 'SnapNum'])
     groupnum = sim.loaded['SubLink' + str(chunknum)]['SubhaloGrNr'][rownum]

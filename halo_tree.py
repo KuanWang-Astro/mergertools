@@ -9,18 +9,19 @@ import simulation_box
 import locate_object
 import load_sublink
 
+_grsn_combo_const = 1000000000000
 
 def _groupnum_sn_1to2(groupsnapnum):
-    return [groupsnapnum % 1000000000000,
-            groupsnapnum // 1000000000000]
+    return [groupsnapnum % _grsn_combo_const,
+            groupsnapnum // _grsn_combo_const]
 
 
 def _groupnum_sn_2to1(groupnum, snapnum):
-    return snapnum * 1000000000000 + groupnum
+    return snapnum * _grsn_combo_const + groupnum
 
 
 def immediate_progenitor_halos(groupnum, snapnum, sim,
-                               subhalo_numlimit=20,
+                               subhalo_numlimit=0,
                                previous_snapshot_only=True):
     """ Finds the immediate progenitor halos of the given halo,
     sorted by virial mass.
@@ -34,9 +35,9 @@ def immediate_progenitor_halos(groupnum, snapnum, sim,
                     fields, sim, numlimit = subhalo_numlimit)['SubhaloID']
 
     immediate_progenitor_subhalos = load_sublink.merge_tree_dicts(
-                                 *[load_sublink.load_immediate_progenitors(
-                                             subhalo, fields, sim)
-                                 for subhalo in subhalos],
+                                 [load_sublink.load_immediate_progenitors(
+                                                     subhalo, fields, sim)
+                                  for subhalo in subhalos],
                                  fields = fields)
     if immediate_progenitor_subhalos['Number'] == 0:
         return np.array([], dtype = 'int64'), np.array([], dtype = 'int64'),\
@@ -44,7 +45,7 @@ def immediate_progenitor_halos(groupnum, snapnum, sim,
 
     immediate_progenitors = _groupnum_sn_2to1(*locate_object.group_num(
                                 immediate_progenitor_subhalos['SubhaloID'],
-                                sim))
+                                sim, internal = True))
     immediate_progenitors, idx = np.unique(immediate_progenitors,
                                            return_index = True)
     progenitor_masses = immediate_progenitor_subhalos['Group_M_TopHat200'][idx]
@@ -78,9 +79,9 @@ def immediate_descendant_halos(groupnum, snapnum, sim,
                     fields, sim, numlimit = subhalo_numlimit)['SubhaloID']
 
     immediate_descendant_subhalos = load_sublink.merge_tree_dicts(
-                                 *[load_sublink.load_immediate_descendant(
-                                             subhalo, fields, sim)
-                                 for subhalo in subhalos],
+                                 [load_sublink.load_immediate_descendant(
+                                                    subhalo, fields, sim)
+                                  for subhalo in subhalos],
                                  fields = fields)
     if immediate_descendant_subhalos['Number'] == 0:
         return np.array([], dtype = 'int64'), np.array([], dtype = 'int64'),\
@@ -88,7 +89,7 @@ def immediate_descendant_halos(groupnum, snapnum, sim,
 
     immediate_descendants = _groupnum_sn_2to1(*locate_object.group_num(
                                 immediate_descendant_subhalos['SubhaloID'],
-                                sim))
+                                sim, internal = True))
     immediate_descendants, idx = np.unique(immediate_descendants,
                                            return_index = True)
     descendant_masses = immediate_descendant_subhalos['Group_M_TopHat200'][idx]
@@ -137,17 +138,19 @@ def progenitor_halos(groupnum, snapnum, sim):
                                                 fields, sim)['SubhaloID']
 
     progenitor_subhalos = load_sublink.merge_tree_dicts(
-                                 *[load_sublink.load_tree_progenitors(
-                                             subhalo, fields, sim,
-                                             main_branch_only = False)
-                                 for subhalo in subhalos],
+                                 [load_sublink.load_tree_progenitors(
+                                            subhalo, fields, sim,
+                                            main_branch_only = False)
+                                  for subhalo in subhalos],
                                  fields = fields)
 
     mask = (progenitor_subhalos['DescendantID'] != -1)
     tree_halos = _groupnum_sn_2to1(*locate_object.group_num(
-               progenitor_subhalos['SubhaloID'][mask], sim))
+                progenitor_subhalos['SubhaloID'][mask], sim,
+                internal = True))
     descendant_pointers = _groupnum_sn_2to1(*locate_object.group_num(
-                     progenitor_subhalos['DescendantID'][mask], sim))
+                     progenitor_subhalos['DescendantID'][mask], sim,
+                     internal = True))
     order = np.argsort(descendant_pointers)
     descendant_pointers = descendant_pointers[order]
     tree_halos = tree_halos[order]

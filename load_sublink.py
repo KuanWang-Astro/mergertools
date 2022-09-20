@@ -8,7 +8,7 @@ import numpy as np
 import simulation_box
 import locate_object
 
-def load_single_subhalo(subhaloid, fields, sim):
+def load_single_subhalo(subhaloid, fields, sim, internal=False):
     """ Loads specified columns in the SubLink catalog for a given subhalo.
 
     Parameters
@@ -24,6 +24,10 @@ def load_single_subhalo(subhaloid, fields, sim):
       Instance of the simulation_box.SimulationBox class, which specifies
       the simulation box to work with.
 
+    internal : bool
+      Whether this function is called internally. User should always leave it
+      as False.
+
     Returns
     -------
     subhalo : dict
@@ -37,7 +41,10 @@ def load_single_subhalo(subhaloid, fields, sim):
     if np.isscalar(subhaloid):
         subhaloid = np.array([subhaloid])
 
-    rownum, chunknum = locate_object.row_in_chunk(subhaloid, sim)
+    if internal:
+        rownum, chunknum = locate_object._row_in_chunk(subhaloid, sim)
+    else:
+        rownum, chunknum = locate_object.row_in_chunk(subhaloid, sim)
     catkey = 'SubLink' + str(chunknum)
     sim.load_by_file('SubLink', chunknum, fields)
 
@@ -103,7 +110,7 @@ def walk_tree(subhaloid, fields, sim, pointer, numlimit=0):
                                                   noniter_pointers))
 
     fields_ = list(set(fields).union(set([pointer])))
-    subhalo = load_single_subhalo(subhaloid, fields_, sim)
+    subhalo = load_single_subhalo(subhaloid, fields_, sim, internal = True)
     chunknum = subhalo['ChunkNumber']
     rownum = subhalo['IndexInChunk'][0]
     catkey = 'SubLink' + str(chunknum)
@@ -326,7 +333,7 @@ def load_tree_progenitors(subhaloid, fields, sim, main_branch_only=False):
 
     fields_ = list(set(fields).union(set(['MainLeafProgenitorID',
                                           'LastProgenitorID'])))
-    subhalo = load_single_subhalo(subhaloid, fields_, sim)
+    subhalo = load_single_subhalo(subhaloid, fields_, sim, internal = True)
     chunknum = subhalo['ChunkNumber']
     rownum = subhalo['IndexInChunk'][0]
     catkey = 'SubLink' + str(chunknum)
