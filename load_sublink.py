@@ -402,7 +402,7 @@ def load_tree_descendants(subhaloid, fields, sim, main_branch_only=True):
     return descendants
 
 
-def merge_tree_dicts(*trees, fields):
+def merge_tree_dicts(trees, fields):
     """ Merge multiple loaded trees that are from the same chunk and have the
     same fields. If a subhalo appears multiple times, only one occurrence is
     kept.
@@ -437,8 +437,8 @@ def load_entire_tree(subhaloid, fields, sim,
 
     """
 
-    return merge_tree_dicts(load_tree_progenitors(subhaloid, fields, sim,
-                                             progenitor_main_branch_only),
-                            load_tree_descendants(subhaloid, fields, sim,
-                                             descendant_main_branch_only),
+    return merge_tree_dicts([load_tree_progenitors(subhaloid, fields, sim,
+                                              progenitor_main_branch_only),
+                             load_tree_descendants(subhaloid, fields, sim,
+                                              descendant_main_branch_only)],
                             fields = fields)
