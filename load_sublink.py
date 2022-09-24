@@ -5,7 +5,6 @@ Module that loads parts of the SubLink merger trees as required.
 
 import numpy as np
 
-import simulation_box
 import locate_object
 
 def load_single_subhalo(subhaloid, fields, sim, internal=False):
