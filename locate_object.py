@@ -30,8 +30,8 @@ def sublink_id(subfindid, snapnum, sim):
     -------
     subhaloid : int or array_like
       The SubhaloID(s) of the given subhalos. Has same shape as the input
-      subfindid. SubhaloID is the SubLink index and is unique throughout all
-      snapshots.
+      subfindid. SubhaloID is the ID assigned by SubLink and is unique
+      throughout all snapshots.
 
     """
 
@@ -231,7 +231,7 @@ def group_num(subhaloid, sim, internal=False):
     ----------
     subhaloid : int or array_like
       The SubhaloID(s) of the subhalos to find group numbers for. SubhaloID
-      is the SubLink index and is unique throughout all snapshots.
+      is the ID assigned by SubLink and is unique throughout all snapshots.
 
     sim : class obj
       Instance of the simulation_box.SimulationBox class, which specifies

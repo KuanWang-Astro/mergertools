@@ -154,7 +154,7 @@ def load_group_subhalos(subhaloid, fields, sim, numlimit=0):
     ----------
     subhaloid : int
       The SubhaloID of the subhalo whose group to load. SubhaloID is the
-      SubLink index and is unique throughout all snapshots.
+      ID assigned by SubLink and is unique throughout all snapshots.
 
     fields : list of str
       The columns to load from the table.
@@ -196,7 +196,7 @@ def load_immediate_progenitors(subhaloid, fields, sim):
     ----------
     subhaloid : int
       The SubhaloID of the subhalo whose progenitors to load. SubhaloID is
-      the SubLink index and is unique throughout all snapshots.
+      the ID assigned by SubLink and is unique throughout all snapshots.
 
     fields : list of str
       The columns to load from the table.
@@ -248,7 +248,7 @@ def load_immediate_descendant(subhaloid, fields, sim):
     ----------
     subhaloid : int
       The SubhaloID of the subhalo whose progenitors to load. SubhaloID is
-      the SubLink index and is unique throughout all snapshots.
+      the ID assigned by SubLink and is unique throughout all snapshots.
 
     fields : list of str
       The columns to load from the table.
@@ -302,7 +302,7 @@ def load_tree_progenitors(subhaloid, fields, sim, main_branch_only=False):
     ----------
     subhaloid : int
       The SubhaloID of the subhalo whose progenitors to load. SubhaloID is
-      the SubLink index and is unique throughout all snapshots.
+      the ID assigned by SubLink and is unique throughout all snapshots.
 
     fields : list of str
       The columns to load from the table.
@@ -363,7 +363,7 @@ def load_tree_descendants(subhaloid, fields, sim, main_branch_only=True):
     ----------
     subhaloid : int
       The SubhaloID of the subhalo whose descendants to load. SubhaloID is
-      the SubLink index and is unique throughout all snapshots.
+      the ID assigned by SubLink and is unique throughout all snapshots.
 
     fields : list of str
       The columns to load from the table.
