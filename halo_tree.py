@@ -156,11 +156,11 @@ def _immediate_progenitor_halos(subhaloid, sim,
         numkeep = np.min([numkeep, len(progenitor_masses)])
         return immediate_progenitors[0][:numkeep],\
                immediate_progenitors[1][:numkeep],\
-               progenitor_subs[:numkeep],\
-               progenitor_masses[:numkeep]
+               progenitor_masses[:numkeep],\
+               progenitor_subs[:numkeep]
 
     return immediate_progenitors[0], immediate_progenitors[1],\
-           progenitor_subs, progenitor_masses
+           progenitor_masses, progenitor_subs
 
 
 def _immediate_descendant_halos(subhaloid, sim,
@@ -210,11 +210,11 @@ def _immediate_descendant_halos(subhaloid, sim,
         numkeep = np.min([numkeep, len(descendant_masses)])
         return immediate_descendants[0][:numkeep],\
                immediate_descendants[1][:numkeep],\
-               descendant_subs[:numkeep],\
-               descendant_masses[:numkeep]
+               descendant_masses[:numkeep],\
+               descendant_subs[:numkeep]
 
     return immediate_descendants[0], immediate_descendants[1],\
-           descendant_subs, descendant_masses
+           descendant_masses, descendant_subs
 
 
 def main_merger_tree(subhaloid, sim):
