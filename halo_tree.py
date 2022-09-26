@@ -87,9 +87,9 @@ def immediate_descendant_halos(groupnum, snapnum, sim,
         return np.array([], dtype = 'int64'), np.array([], dtype = 'int64'),\
                np.array([], dtype = '<f4')
 
-    immediate_descendants = _groupnum_sn_2to1(*locate_object.group_num(
-                                immediate_descendant_subhalos['SubhaloID'],
-                                sim, internal = True))
+    immediate_descendants = _groupnum_sn_2to1(
+                            immediate_descendant_subhalos['SubhaloGrNr'],
+                            immediate_descendant_subhalos['SnapNum'])
     immediate_descendants, idx = np.unique(immediate_descendants,
                                            return_index = True)
     descendant_masses = immediate_descendant_subhalos['Group_M_TopHat200'][idx]
@@ -161,6 +161,60 @@ def _immediate_progenitor_halos(subhaloid, sim,
 
     return immediate_progenitors[0], immediate_progenitors[1],\
            progenitor_subs, progenitor_masses
+
+
+def _immediate_descendant_halos(groupnum, snapnum, sim,
+                                subhalo_numlimit=20,
+                                next_snapshot_only=True,
+                                numkeep=1):
+    """ Finds the immediate descendant halos of the given halo,
+    sorted by virial mass.
+
+    """
+
+    fields = ['SubhaloID', 'Group_M_TopHat200', 'SubhaloGrNr']
+    group_subhalos = load_sublink.load_group_subhalos(subhaloid, fields,
+                                       sim, numlimit = subhalo_numlimit)
+    subhalos = group_subhalos['SubhaloID']
+    snapnum = group_subhalos['SnapNum'][0]
+
+    immediate_descendant_subhalos = load_sublink.merge_tree_dicts(
+                                 [load_sublink.load_immediate_descendant(
+                                                    subhalo, fields, sim)
+                                  for subhalo in subhalos],
+                                 fields = fields)
+    if immediate_descendant_subhalos['Number'] == 0:
+        return np.array([], dtype = 'int64'), np.array([], dtype = 'int64'),\
+               np.array([], dtype = '<f4')
+
+    immediate_descendants = _groupnum_sn_2to1(
+                            immediate_descendant_subhalos['SubhaloGrNr'],
+                            immediate_descendant_subhalos['SnapNum'])
+    immediate_descendants, idx = np.unique(immediate_descendants,
+                                           return_index = True)
+    descendant_subs = immediate_descendant_subhalos['SubhaloID'][idx]
+    descendant_masses = immediate_descendant_subhalos['Group_M_TopHat200'][idx]
+    order = np.argsort(-descendant_masses)
+
+    immediate_descendants = _groupnum_sn_1to2(immediate_descendants[order])
+    descendant_subs = descendant_subs[order]
+    descendant_masses = descendant_masses[order]
+
+    if next_snapshot_only:
+        mask = immediate_descendants[1] == snapnum + 1
+        immediate_descendants[0] = immediate_descendants[0][mask]
+        immediate_descendants[1] = immediate_descendants[1][mask]
+        descendant_masses = descendant_masses[mask]
+
+    if numkeep:
+        numkeep = np.min([numkeep, len(descendant_masses)])
+        return immediate_descendants[0][:numkeep],\
+               immediate_descendants[1][:numkeep],\
+               descendant_subs[:numkeep],\
+               descendant_masses[:numkeep]
+
+    return immediate_descendants[0], immediate_descendants[1],\
+           descendant_subs, descendant_masses
 
 
 def main_merger_tree(subhaloid, sim):
