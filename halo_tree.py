@@ -172,7 +172,7 @@ def _immediate_descendant_halos(subhaloid, sim,
 
     """
 
-    fields = ['SubhaloID', 'Group_M_TopHat200', 'SubhaloGrNr']
+    fields = ['SubhaloID', 'Group_M_TopHat200', 'SubhaloGrNr', 'SnapNum']
     group_subhalos = load_sublink.load_group_subhalos(subhaloid, fields,
                                        sim, numlimit = subhalo_numlimit)
     subhalos = group_subhalos['SubhaloID']
