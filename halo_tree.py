@@ -117,8 +117,10 @@ def _immediate_progenitor_halos(subhaloid, sim,
     """
 
     fields = ['SubhaloID', 'Group_M_TopHat200', 'SubhaloGrNr', 'SnapNum']
-    subhalos = load_sublink.load_group_subhalos(subhaloid, fields,
-                    sim, numlimit = subhalo_numlimit)['SubhaloID']
+    group_subhalos = load_sublink.load_group_subhalos(subhaloid, fields,
+                                       sim, numlimit = subhalo_numlimit)
+    subhalos = group_subhalos['SubhaloID']
+    snapnum = group_subhalos['SnapNum'][0]
 
     immediate_progenitor_subhalos = load_sublink.merge_tree_dicts(
                                  [load_sublink.load_immediate_progenitors(
