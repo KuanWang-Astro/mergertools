@@ -163,7 +163,7 @@ def _immediate_progenitor_halos(subhaloid, sim,
            progenitor_subs, progenitor_masses
 
 
-def _immediate_descendant_halos(groupnum, snapnum, sim,
+def _immediate_descendant_halos(subhaloid, sim,
                                 subhalo_numlimit=20,
                                 next_snapshot_only=True,
                                 numkeep=1):
