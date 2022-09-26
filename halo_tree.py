@@ -110,7 +110,8 @@ def immediate_descendant_halos(groupnum, snapnum, sim,
 
 def _immediate_progenitor_halos(subhaloid, sim,
                                 subhalo_numlimit=0,
-                                previous_snapshot_only=True):
+                                previous_snapshot_only=True,
+                                numkeep=2):
     """ Finds the immediate progenitor halos of the given halo,
     sorted by virial mass.
 
@@ -150,6 +151,13 @@ def _immediate_progenitor_halos(subhaloid, sim,
         immediate_progenitors[1] = immediate_progenitors[1][mask]
         progenitor_subs = progenitor_subs[mask]
         progenitor_masses = progenitor_masses[mask]
+
+    if numkeep:
+        numkeep = np.min([numkeep, len(progenitor_masses)])
+        return immediate_progenitors[0][:numkeep],\
+               immediate_progenitors[1][:numkeep],\
+               progenitor_subs[:numkeep],\
+               progenitor_masses[:numkeep]
 
     return immediate_progenitors[0], immediate_progenitors[1],\
            progenitor_subs, progenitor_masses
