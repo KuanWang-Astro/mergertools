@@ -134,20 +134,23 @@ def _immediate_progenitor_halos(subhaloid, sim,
                             immediate_progenitor_subhalos['SnapNum'])
     immediate_progenitors, idx = np.unique(immediate_progenitors,
                                            return_index = True)
+    progenitor_subs = immediate_progenitor_subhalos['SubhaloID'][idx]
     progenitor_masses = immediate_progenitor_subhalos['Group_M_TopHat200'][idx]
     order = np.argsort(-progenitor_masses)
 
     immediate_progenitors = _groupnum_sn_1to2(immediate_progenitors[order])
+    progenitor_subs = progenitor_subs[order]
     progenitor_masses = progenitor_masses[order]
 
     if previous_snapshot_only:
         mask = immediate_progenitors[1] == snapnum - 1
         immediate_progenitors[0] = immediate_progenitors[0][mask]
         immediate_progenitors[1] = immediate_progenitors[1][mask]
+        progenitor_subs = progenitor_subs[mask]
         progenitor_masses = progenitor_masses[mask]
 
     return immediate_progenitors[0], immediate_progenitors[1],\
-           progenitor_masses
+           progenitor_subs, progenitor_masses
 
 
 def main_merger_tree(subhaloid, sim):
