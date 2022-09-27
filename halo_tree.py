@@ -232,51 +232,48 @@ def _self_halo(subhaloid, sim):
 
 
 
-def main_merger_tree(subhaloid, sim, track_descendants=False):
+def main_merger_tree(subhaloid, sim,
+                     mass_ratio_thr=0, track_descendants=False):
     """
 
 
     """
 
-    main_halos = []
-    incoming_halos = []
+    main_halos = {'GrNr': [], 'SnapNum': [], 'Group_M_TopHat200': []}
+    incoming_halos = {'GrNr': [], 'SnapNum': [], 'Group_M_TopHat200': []}
     head = subhaloid
     result = _self_halo(head, sim)
     while len(result[0]):
-        main_halos.append(np.array((result[0][0],
-                                    result[1][0],
-                                    result[2][0]),
-                          dtype = [('GrNr', 'int64'),
-                                   ('SnapNum', 'int64'),
-                                   ('Mvir', 'float32')]))
-        if len(result[0]) > 1:
-            incoming_halos.append(np.array((result[0][1],
-                                            result[1][1],
-                                            result[2][1]),
-                                  dtype = [('GrNr', 'int64'),
-                                           ('SnapNum', 'int64'),
-                                           ('Mvir', 'float32')]))
+        main_halos['GrNr'].insert(0, result[0][0])
+        main_halos['SnapNum'].insert(0, result[1][0])
+        main_halos['Group_M_TopHat200'].insert(0, result[2][0])
+        if len(result[0]) > 1 and result[2][1] >= mass_ratio_thr * result[2][0]:
+            incoming_halos['GrNr'].insert(0, result[0][1])
+            incoming_halos['SnapNum'].insert(0, result[1][1])
+            incoming_halos['Group_M_TopHat200'].insert(0, result[2][1])
         head = result[3][0]
         result = _immediate_progenitor_halos(head, sim)
 
     if not track_descendants:
-        return np.array(main_halos)[::-1], np.array(incoming_halos)[::-1]
+        for k in main_halos.keys():
+            main_halos[k] = np.array(main_halos[k])
+            incoming_halos[k] = np.array(incoming_halos[k])
+        return main_halos, incoming_halos
 
-    main_halos = main_halos[::-1]
-    incoming_halos = incoming_halos[::-1]
     head = subhaloid
     result = _immediate_descendant_halos(head, sim)
     while len(result[0]):
-        main_halos.append(np.array((result[0][0],
-                                    result[1][0],
-                                    result[2][0]),
-                          dtype = [('GrNr', 'int64'),
-                                   ('SnapNum', 'int64'),
-                                   ('Mvir', 'float32')]))
+        main_halos['GrNr'].append(result[0][0])
+        main_halos['SnapNum'].append(result[1][0])
+        main_halos['Group_M_TopHat200'].append(result[2][0])
         head = result[3][0]
-        result = _immediate_descendant_halos(head, sim)
+        result = _immediate_descendant_halos(head, sim[k])
 
-    return np.array(main_halos), np.array(incoming_halos)
+
+    for k in main_halos.keys():
+        main_halos[k] = np.array(main_halos[k])
+        incoming_halos[k] = np.array(incoming_halos)
+    return main_halos, incoming_halos
 
 
 def progenitor_halos(groupnum, snapnum, sim):
