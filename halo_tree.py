@@ -109,7 +109,7 @@ def immediate_descendant_halos(groupnum, snapnum, sim,
 
 
 def _immediate_progenitor_halos(subhaloid, sim,
-                                subhalo_numlimit=0,
+                                subhalo_numlimit=20,
                                 previous_snapshot_only=True,
                                 numkeep=2):
     """ Finds the immediate progenitor halos of the given halo,
