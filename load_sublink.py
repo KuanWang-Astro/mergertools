@@ -221,7 +221,7 @@ def load_immediate_progenitors(subhaloid, fields, sim):
 
     fields_ = list(set(fields).union(set(['SubhaloID'])))
     firstprogenitor = walk_tree(subhaloid, fields_, sim,
-                                  'FirstProgenitorID', numlimit = 2)
+                                'FirstProgenitorID', numlimit = 2)
     if firstprogenitor['SubhaloID'][-1] == subhaloid:
         immediate_progenitors = {}
         immediate_progenitors['Number'] = 0

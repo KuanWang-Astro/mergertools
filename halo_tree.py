@@ -217,12 +217,30 @@ def _immediate_descendant_halos(subhaloid, sim,
            descendant_masses, descendant_subs
 
 
+def _self_halo(subhaloid, sim):
+    """ Finds the immediate progenitor halos of the given halo,
+    sorted by virial mass.
+
+    """
+
+    fields = ['SubhaloID', 'Group_M_TopHat200', 'SubhaloGrNr', 'SnapNum']
+    subhalo = load_sublink.load_single_subhalo(subhaloid, fields,
+                                                   sim, internal = True)
+
+    return subhalo['SubhaloGrNr'], subhalo['SnapNum'],\
+           subhalo['Group_M_TopHat200'], subhalo['SubhaloID']
+
+
+
 def main_merger_tree(subhaloid, sim):
     """
 
 
     """
-    pass
+
+    main_halos = []
+    incoming_halos = []
+
 
 def progenitor_halos(groupnum, snapnum, sim):
     """ Loads the progenitor halos (FOF groups) of the given halo. Progenitor
