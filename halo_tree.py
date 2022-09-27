@@ -244,10 +244,10 @@ def main_merger_tree(subhaloid, sim, track_descendants=False):
     result = _self_halo(head, sim)
     while len(result[0]):
         main_halos.append(np.array((result[0][0], result[1][0], result[2][0]),
-                          dtype = 'int64, int64, float32')
+                          dtype = 'int64, int64, float32'))
         if len(result[0]) > 1:
             incoming_halos.append(np.array((result[0][1], result[1][1],
-                       result[2][1]), dtype = 'int64, int64, float32')
+                       result[2][1]), dtype = 'int64, int64, float32'))
         head = result[3][0]
         result = _immediate_progenitor_halos(head, sim)
 
@@ -260,7 +260,7 @@ def main_merger_tree(subhaloid, sim, track_descendants=False):
     result = _immediate_descendant_halos(head, sim)
     while len(result[0]):
         main_halos.append(np.array((result[0][0], result[1][0], result[2][0]),
-                          dtype = 'int64, int64, float32')
+                          dtype = 'int64, int64, float32'))
         head = result[3][0]
         result = _immediate_descendant_halos(head, sim)
 
