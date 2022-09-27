@@ -225,14 +225,14 @@ def _self_halo(subhaloid, sim):
 
     fields = ['SubhaloID', 'Group_M_TopHat200', 'SubhaloGrNr', 'SnapNum']
     subhalo = load_sublink.load_single_subhalo(subhaloid, fields,
-                                                   sim, internal = True)
+                                               sim, internal = True)
 
     return subhalo['SubhaloGrNr'], subhalo['SnapNum'],\
            subhalo['Group_M_TopHat200'], subhalo['SubhaloID']
 
 
 
-def main_merger_tree(subhaloid, sim):
+def main_merger_tree(subhaloid, sim, track_descendants=False):
     """
 
 
@@ -240,6 +240,28 @@ def main_merger_tree(subhaloid, sim):
 
     main_halos = []
     incoming_halos = []
+    head = subhaloid
+    result = _self_halo(head, sim)
+    while len(result[0]):
+        main_halos.append([result[0][0], result[1][0], result[2][0]])
+        if len(result[0]) > 1:
+            incoming_halos.append([result[0][1], result[1][1], result[2][1]])
+        head = result[3][0]
+        result = _immediate_progenitor_halos(head, sim)
+
+    if not track_descendants:
+        return np.array(main_halos)[::-1], np.array(incoming_halos)[::-1]
+
+    main_halos = main_halos[::-1]
+    incoming_halos = incoming_halos[::-1]
+    head = subhaloid
+    result = _immediate_descendant_halos(head, sim)
+    while len(result[0]):
+        main_halos.append([result[0][0], result[1][0], result[2][0]])
+        head = result[3][0]
+        result = _immediate_descendant_halos(head, sim)
+
+    return np.array(main_halos), np.array(incoming_halos)
 
 
 def progenitor_halos(groupnum, snapnum, sim):
