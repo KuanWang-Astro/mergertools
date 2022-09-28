@@ -21,7 +21,7 @@ def _groupnum_sn_2to1(groupnum, snapnum):
 
 
 def immediate_progenitor_halos(groupnum, snapnum, sim,
-                               subhalo_numlimit=0,
+                               subhalo_numlimit=20,
                                previous_snapshot_only=True):
     """ Finds the immediate progenitor halos of the given halo,
     sorted by virial mass.
