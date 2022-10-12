@@ -30,7 +30,8 @@ def immediate_progenitor_halos(groupnum, snapnum, sim,
 
     central_sfid = locate_object.subfind_central(groupnum, snapnum, sim)
     central_shid = locate_object.sublink_id(central_sfid, snapnum, sim)
-    fields = ['SubhaloID', 'Group_M_TopHat200', 'SubhaloGrNr', 'SnapNum']
+    fields = ['SubhaloID', 'Group_M_TopHat200', 'GroupMass',
+              'SubhaloGrNr', 'SnapNum']
     subhalos = load_sublink.load_group_subhalos(central_shid,
                     fields, sim, numlimit = subhalo_numlimit)['SubhaloID']
 
@@ -74,7 +75,8 @@ def immediate_descendant_halos(groupnum, snapnum, sim,
 
     central_sfid = locate_object.subfind_central(groupnum, snapnum, sim)
     central_shid = locate_object.sublink_id(central_sfid, snapnum, sim)
-    fields = ['SubhaloID', 'Group_M_TopHat200', 'SubhaloGrNr']
+    fields = ['SubhaloID', 'Group_M_TopHat200', 'GroupMass',
+              'SubhaloGrNr', 'SnapNum']
     subhalos = load_sublink.load_group_subhalos(central_shid,
                     fields, sim, numlimit = subhalo_numlimit)['SubhaloID']
 
@@ -117,7 +119,8 @@ def _immediate_progenitor_halos(subhaloid, sim,
 
     """
 
-    fields = ['SubhaloID', 'Group_M_TopHat200', 'SubhaloGrNr', 'SnapNum']
+    fields = ['SubhaloID', 'Group_M_TopHat200', 'GroupMass',
+              'SubhaloGrNr', 'SnapNum']
     group_subhalos = load_sublink.load_group_subhalos(subhaloid, fields,
                                        sim, numlimit = subhalo_numlimit)
     subhalos = group_subhalos['SubhaloID']
@@ -172,7 +175,8 @@ def _immediate_descendant_halos(subhaloid, sim,
 
     """
 
-    fields = ['SubhaloID', 'Group_M_TopHat200', 'SubhaloGrNr', 'SnapNum']
+    fields = ['SubhaloID', 'Group_M_TopHat200', 'GroupMass',
+              'SubhaloGrNr', 'SnapNum']
     group_subhalos = load_sublink.load_group_subhalos(subhaloid, fields,
                                        sim, numlimit = subhalo_numlimit)
     subhalos = group_subhalos['SubhaloID']
@@ -223,7 +227,8 @@ def _self_halo(subhaloid, sim):
 
     """
 
-    fields = ['SubhaloID', 'Group_M_TopHat200', 'SubhaloGrNr', 'SnapNum']
+    fields = ['SubhaloID', 'Group_M_TopHat200', 'GroupMass',
+              'SubhaloGrNr', 'SnapNum']
     subhalo = load_sublink.load_single_subhalo(subhaloid, fields,
                                                sim, internal = True)
 
