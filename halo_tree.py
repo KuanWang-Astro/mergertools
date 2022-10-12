@@ -248,6 +248,7 @@ def main_merger_tree(subhaloid, sim,
     incoming_halos = {'GrNr': [], 'SnapNum': [], 'Group_M_TopHat200': []}
     head = subhaloid
     result = _self_halo(head, sim)
+    headgroup = result[0][0]
     while len(result[0]):
         main_halos['GrNr'].insert(0, result[0][0])
         main_halos['SnapNum'].insert(0, result[1][0])
@@ -267,13 +268,17 @@ def main_merger_tree(subhaloid, sim,
 
     head = subhaloid
     result = _immediate_descendant_halos(head, sim)
+    backcheck = _immediate_progenitor_halos(result[3][0], sim)
     while len(result[0]):
+        if headgroup != backcheck[0][0]:
+            break
         main_halos['GrNr'].append(result[0][0])
         main_halos['SnapNum'].append(result[1][0])
         main_halos['Group_M_TopHat200'].append(result[2][0])
         head = result[3][0]
+        headgroup = result[0][0]
         result = _immediate_descendant_halos(head, sim[k])
-
+        backcheck = _immediate_progenitor_halos(result[3][0], sim)
 
     for k in main_halos.keys():
         main_halos[k] = np.array(main_halos[k])
