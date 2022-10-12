@@ -281,7 +281,7 @@ def main_merger_tree(subhaloid, sim,
 
     for k in main_halos.keys():
         main_halos[k] = np.array(main_halos[k])
-        incoming_halos[k] = np.array(incoming_halos)
+        incoming_halos[k] = np.array(incoming_halos[k])
     return main_halos, incoming_halos
 
 
