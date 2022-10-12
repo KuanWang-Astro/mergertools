@@ -268,8 +268,8 @@ def main_merger_tree(subhaloid, sim,
 
     head = subhaloid
     result = _immediate_descendant_halos(head, sim)
-    backcheck = _immediate_progenitor_halos(result[3][0], sim)
     while len(result[0]):
+        backcheck = _immediate_progenitor_halos(result[3][0], sim)
         if headgroup != backcheck[0][0]:
             break
         main_halos['GrNr'].append(result[0][0])
@@ -278,7 +278,6 @@ def main_merger_tree(subhaloid, sim,
         head = result[3][0]
         headgroup = result[0][0]
         result = _immediate_descendant_halos(head, sim)
-        backcheck = _immediate_progenitor_halos(result[3][0], sim)
 
     for k in main_halos.keys():
         main_halos[k] = np.array(main_halos[k])
