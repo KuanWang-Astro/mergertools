@@ -277,7 +277,7 @@ def main_merger_tree(subhaloid, sim,
         main_halos['Group_M_TopHat200'].append(result[2][0])
         head = result[3][0]
         headgroup = result[0][0]
-        result = _immediate_descendant_halos(head, sim[k])
+        result = _immediate_descendant_halos(head, sim)
         backcheck = _immediate_progenitor_halos(result[3][0], sim)
 
     for k in main_halos.keys():
