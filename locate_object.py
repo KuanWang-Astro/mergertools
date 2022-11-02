@@ -265,8 +265,26 @@ def group_num(subhaloid, sim, internal=False):
 
 
 def is_subfind_central(subhaloid, sim):
-    """
+    """ Checks whether a subhalo is the subhalo with the highest instantaneous
+    mass in its host FOF group. This is the same as the the central subhalo
+    identified by SubFind in the column `GroupFirstSub`.
 
+
+    Parameters
+    ----------
+    subhaloid : int or array_like
+      The SubhaloID(s) of the subhalos to find group numbers for. SubhaloID
+      is the ID assigned by SubLink and is unique throughout all snapshots.
+
+    sim : class obj
+      Instance of the simulation_box.SimulationBox class, which specifies
+      the simulation box to work with.
+
+    Returns
+    -------
+    is_cen : bool or array_like
+      Boolean values of whether the given subhalo(s) are SubFind centrals of
+      their host FOF groups. Has same shape as the input subhaloid.
 
     """
 
@@ -280,8 +298,26 @@ def is_subfind_central(subhaloid, sim):
 
 
 def is_sublink_central(subhaloid, sim):
-    """
+    """ Checks whether a subhalo is the subhalo with the highest mass history
+    in its host FOF group. This is the same as the the central subhalo
+    identified by SubLink in the column `FirstSubhaloInFOFGroupID`.
 
+
+    Parameters
+    ----------
+    subhaloid : int or array_like
+      The SubhaloID(s) of the subhalos to find group numbers for. SubhaloID
+      is the ID assigned by SubLink and is unique throughout all snapshots.
+
+    sim : class obj
+      Instance of the simulation_box.SimulationBox class, which specifies
+      the simulation box to work with.
+
+    Returns
+    -------
+    is_cen : bool or array_like
+      Boolean values of whether the given subhalo(s) are SubLink centrals of
+      their host FOF groups. Has same shape as the input subhaloid.
 
     """
     rownum, chunknum = row_in_chunk(subhaloid, sim)
