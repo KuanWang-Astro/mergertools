@@ -279,7 +279,7 @@ def is_subfind_central(subhaloid, sim):
     return subfindid == subfindcen
 
 
-def is_sublink_central():
+def is_sublink_central(subhaloid, sim):
     """
 
 
