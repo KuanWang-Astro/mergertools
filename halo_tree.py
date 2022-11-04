@@ -143,8 +143,9 @@ def _immediate_progenitor_halos(subhaloid, sim,
                             immediate_progenitor_subhalos['SnapNum'][mask])
     immediate_progenitors, idx = np.unique(immediate_progenitors,
                                            return_index = True)
-    progenitor_subs = immediate_progenitor_subhalos['SubhaloID'][idx]
-    progenitor_masses = immediate_progenitor_subhalos['Group_M_TopHat200'][idx]
+    progenitor_subs = immediate_progenitor_subhalos['SubhaloID'][mask][idx]
+    progenitor_masses = immediate_progenitor_subhalos['Group_M_TopHat200']\
+                                                     [mask][idx]
     order = np.argsort(-progenitor_masses)
 
     immediate_progenitors = _groupnum_sn_1to2(immediate_progenitors[order])
