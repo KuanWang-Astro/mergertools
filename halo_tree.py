@@ -21,7 +21,7 @@ def _groupnum_sn_2to1(groupnum, snapnum):
 
 def all_immediate_progenitor_halos(groupnum, snapnum, sim,
                                subhalo_numlimit=20,
-                               previous_snapshot_only=True):
+                               previous_snapshot_only=False):
     """ Finds the immediate progenitor halos of the given halo, defined as
     all the halos in the previous snapshot that host progenitors of subhalos
     in the given halo, sorted by virial mass.
@@ -67,7 +67,7 @@ def all_immediate_progenitor_halos(groupnum, snapnum, sim,
 
 def all_immediate_descendant_halos(groupnum, snapnum, sim,
                                subhalo_numlimit=20,
-                               next_snapshot_only=True):
+                               next_snapshot_only=False):
     """ Finds the immediate descendant halos of the given halo, defined as
     all the halos in the next snapshot that host descendants of subhalos
     in the given halo, sorted by virial mass.
@@ -113,7 +113,7 @@ def all_immediate_descendant_halos(groupnum, snapnum, sim,
 
 def _immediate_progenitor_halos(subhaloid, sim,
                                 subhalo_numlimit=20,
-                                previous_snapshot_only=True,
+                                previous_snapshot_only=False,
                                 numkeep=2):
     """ Finds the immediate progenitor halos of the given halo,
     sorted by virial mass.
@@ -172,7 +172,7 @@ def _immediate_progenitor_halos(subhaloid, sim,
 
 def _immediate_descendant_halo(subhaloid, sim,
                                subhalo_numlimit=20,
-                               next_snapshot_only=True):
+                               next_snapshot_only=False):
     """ Finds the immediate descendant halo of the given halo.
 
     """
