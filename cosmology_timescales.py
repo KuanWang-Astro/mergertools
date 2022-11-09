@@ -14,8 +14,8 @@ from astropy.cosmology import FlatLambdaCDM
 # Cosmological calculations #
 #############################
 
-h = 0.688
-omega_m = 0.295
+h = 0.6774
+omega_m = 0.3089
 omega_L = 1 - omega_m
 cosmo = FlatLambdaCDM(H0 = h * 100, Om0 = omega_m)
 const1 = 0.102271217 # 100km/s/Mpc = const1 Gyr^-1, H0 = h * const1 Gyr^-1
@@ -45,13 +45,13 @@ def t_dyn(a): # in Gyr
     z = 1 / a - 1
     return np.pi / h / const1 / np.sqrt(E2(z) * 2 * Delta_c(z))
 
-def n_t_dyn(a, ai = 0.06): # number of tdyn's at a since ai
+def n_t_dyn(a, ai = 0.04751386): # number of tdyn's at a since ai
     z = 1 / a - 1
     zi = 1 / ai - 1
     return quad(lambda x: 1 / (1 + x) / t_dyn(1 / (1 + x)) / np.sqrt(E2(x)),
                 z, zi)[0] / h / const1
 
-a_interp = np.linspace(0.06, 1, 1000)
+a_interp = np.linspace(0.02, 1, 1000)
 n_interp = np.array([n_t_dyn(a) for a in a_interp])
 ntau_a = interp1d(a_interp, n_interp)
 a_ntau = interp1d(n_interp, a_interp)
@@ -60,7 +60,7 @@ a_ntau = interp1d(n_interp, a_interp)
 #### Time steps in tree #####
 #############################
 
-a_list = np.hstack((np.linspace(6, 10, 9), np.linspace(11, 100, 90))) / 100
+a_list = np.load('a_list.npy')
 z_list = 1 / a_list - 1
 n_list = ntau_a(a_list)
 
