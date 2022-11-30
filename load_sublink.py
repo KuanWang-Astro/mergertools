@@ -108,7 +108,7 @@ def walk_tree(subhaloid, fields, sim, pointer, numlimit=0):
                          'Choose from {}.'.format(iter_pointers +
                                                   noniter_pointers))
 
-    fields_ = list(set(fields).union(set([pointer])))
+    fields_ = list(set(fields).union(set([pointer, 'SubhaloID'])))
     subhalo = load_single_subhalo(subhaloid, fields_, sim, internal = True)
     chunknum = subhalo['ChunkNumber']
     rownum = subhalo['IndexInChunk'][0]
@@ -331,7 +331,8 @@ def load_tree_progenitors(subhaloid, fields, sim, main_branch_only=False):
         raise TypeError('Process one subhalo at a time.')
 
     fields_ = list(set(fields).union(set(['MainLeafProgenitorID',
-                                          'LastProgenitorID'])))
+                                          'LastProgenitorID',
+                                          'SubhaloID'])))
     subhalo = load_single_subhalo(subhaloid, fields_, sim, internal = True)
     chunknum = subhalo['ChunkNumber']
     rownum = subhalo['IndexInChunk'][0]
@@ -352,6 +353,17 @@ def load_tree_progenitors(subhaloid, fields, sim, main_branch_only=False):
     for field in fields:
         progenitors[field] = sim.loaded[catkey][field][start : end + 1]
     return progenitors
+
+def subhalo_peak_mass(subhaloid, sim):
+    """ Finds the peak SubhaloMass along the main branch of the given subhalo,
+    up to the snapshot of the given subhalo.
+
+    """
+
+    progenitors = load_tree_progenitors(subhaloid, ['SubhaloMass'], sim,
+                                        main_branch_only=True)
+    return np.max(progenitors['SubhaloMass'])
+
 
 
 def load_tree_descendants(subhaloid, fields, sim, main_branch_only=True):
