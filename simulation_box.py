@@ -63,6 +63,18 @@ class SimulationBox:
         self.basepath = basepath
         self.loaded = {}
 
+        self.columns = {'SubLinkOffsets': ['SubhaloID'],
+                        'SubLink': ['SnapNum', 'SubhaloID', 'SubfindID',
+                                    'SubhaloGrNr', 'GroupFirstSub',
+                                    'FirstProgenitorID', 'NextProgenitorID',
+                                    'DescendantID', 'LastProgenitorID',
+                                    'MainLeafProgenitorID', 'RootDescendantID',
+                                    'FirstSubhaloInFOFGroupID',
+                                    'NextSubhaloInFOFGroupID',
+                                    'Group_M_TopHat200', 'GroupMass',
+                                    'GroupPos', 'SubhaloMass'],
+                        'Group': ['GroupFirstSub']}
+
 
     def data_path(self, catalog, filenum):
         """ Constructs the path to a data file for the specified catalog
@@ -130,7 +142,7 @@ class SimulationBox:
         raise OSError('Invalid file path: {}'.format(fpath))
 
 
-    def load_by_file(self, catalog, filenum, fields):
+    def load_by_file(self, catalog, filenum, fields=None):
         """ Loads a data catalog into a dictionary, where keys are consistent
         with TNG column names and columns are converted to numpy arrays.
 
@@ -147,8 +159,9 @@ class SimulationBox:
           number for 'SubLinkOffsets' and 'Group', and the chunk number for
           'SubLink'.
 
-        fields : list of str
-          The columns to load from the table.
+        fields : list of str, optional
+          The columns to load from the table. If not given, the default columns
+          will be used.
 
         Returns
         -------
@@ -165,6 +178,9 @@ class SimulationBox:
 
         """
 
+        if fields is None:
+            fields = self.columns[catalog]
+        
         if isinstance(fields, str):
             fields = [fields]
 
@@ -179,6 +195,8 @@ class SimulationBox:
         path = self.data_path(catalog, filenum)
 
         if catalog == 'Group':
+            if fields != ['GroupFirstSub']:
+                print('Only the `GroupFirstSub` column is availbale.')
             arr = np.load(path)
             arr_dict = {'GroupFirstSub': arr}
 
