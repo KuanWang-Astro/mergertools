@@ -180,7 +180,7 @@ class SimulationBox:
 
         if fields is None:
             fields = self.columns[catalog]
-        
+
         if isinstance(fields, str):
             fields = [fields]
 
@@ -218,22 +218,6 @@ class SimulationBox:
         return
 
 
-    def load_data(self, catalog, filenum, fields):
-        """ to avoid opening the hdf5 files multiple times.
-
-        Parameters
-        ----------
-
-
-        Returns
-        -------
-
-
-        """
-
-        pass
-
-
     def clear_loaded(self, keep_catalogs=None):
         """ Deletes part or all of the loaded catalogs to release memory.
 
@@ -250,6 +234,9 @@ class SimulationBox:
 
         """
 
+        if isinstance(keep_catalogs, str):
+            keep_catalogs = [keep_catalogs]
+            
         if keep_catalogs:
             self.loaded = {k: self.loaded[k] for k in keep_catalogs}
         else:
