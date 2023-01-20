@@ -222,6 +222,20 @@ def subfind_central(groupnum, snapnum, sim):
     return central
 
 
+def sublink_central(groupnum, snapnum, sim):
+    """
+    """
+    subfindcen = sublink_id(subfind_central(groupnum, snapnum, sim),
+                            snapnum, sim)
+    rownum, chunknum = row_in_chunk(subfindcen, sim)
+    sim.load_by_file('SubLink', chunknum,
+                     fields = ['FirstSubhaloInFOFGroupID'])
+    sublinkcen = sim.loaded['SubLink' + str(chunknum)]\
+                           ['FirstSubhaloInFOFGroupID'][rownum]
+
+    return sublinkcen
+
+
 def group_num(subhaloid, sim, internal=False):
     """ Identifies the index(es) of the halo(s) hosting the input subhalo(s)
     given the SubhaloID(s) and snapshot. Processes any number of subhalos in
