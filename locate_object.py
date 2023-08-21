@@ -5,9 +5,8 @@ Module with functions that locate subhalos and convert between different ids.
 
 import numpy as np
 
-import simulation_box
-
 _sl_chunk_const = 10000000000000000
+
 
 def sublink_id(subfindid, snapnum, sim):
     """ Converts subhalo SubfindID(s) to SubhaloID(s) given the snapshot.
@@ -39,9 +38,9 @@ def sublink_id(subfindid, snapnum, sim):
         raise TypeError('The input snapnum should be one number,' +
                         ' process subhalos in different snapshots separately.')
 
-    sim.load_by_file('SubLinkOffsets', snapnum, fields = ['SubhaloID'])
+    sim.load_by_file('SubLinkOffsets', snapnum, fields=['SubhaloID'])
     subhaloid = sim.loaded['SubLinkOffsets'
-                              + str(snapnum)]['SubhaloID'][subfindid]
+                           + str(snapnum)]['SubhaloID'][subfindid]
 
     return subhaloid
 
@@ -82,7 +81,7 @@ def chunk_num(subhaloid):
     return chunknum, samechunk
 
 
-def row_in_chunk(subhaloid, sim):
+def row_in_chunk(subhaloid, sim, tolerate_non_existence=False):
     """ Locates subhalo(s) within a tree file chunk.
 
     Parameters
@@ -94,6 +93,11 @@ def row_in_chunk(subhaloid, sim):
     sim : class obj
       Instance of the simulation_box.SimulationBox class, which specifies the
       simulation box to work with.
+
+    tolerate_non_existence: bool, optional
+      Policy to adopt if any of the input subhalos do not exist in the tree.
+      If False (default), raise ValueError, if True, return wrong rownum for
+      that subhalo, but print out its SubhaloID.
 
     Returns
     -------
@@ -113,30 +117,38 @@ def row_in_chunk(subhaloid, sim):
                          ' process subhalos in different chunks separately.' +
                          ' Index of the first subhalo in a different chunk ' +
                          'is {}.'.format(np.sort(np.unique(chunknum,
-                         return_index = True)[1])[1]))
+                                                           return_index=True)[1])[1]))
     if not np.isscalar(chunknum):
         chunknum = chunknum[0]
-    sim.load_by_file('SubLink', chunknum, fields = ['SubhaloID'])
-    rownum = np.searchsorted(sim.loaded['SubLink' + str(chunknum)]\
+    sim.load_by_file('SubLink', chunknum, fields=['SubhaloID'])
+    rownum = np.searchsorted(sim.loaded['SubLink' + str(chunknum)]
                                        ['SubhaloID'],
                              subhaloid)
-    if np.any(subhaloid != sim.loaded['SubLink' + str(chunknum)]\
+    if np.any(subhaloid != sim.loaded['SubLink' + str(chunknum)]
                                      ['SubhaloID'][rownum]):
-        raise ValueError('Some of the SubhaloIDs do not exist.')
+        if tolerate_non_existence:
+            print('SubhaloID(s) not present in tree: ',
+                  subhaloid[subhaloid != sim.loaded['SubLink' + str(chunknum)]
+                                                   ['SubhaloID'][rownum]])
+        else:
+            raise ValueError('Some of the SubhaloIDs do not exist in the tree.' +
+                             'This would sometimes occur if a subhalo does not ' +
+                             'have an established progenitor/descendant history, ' +
+                             'and is not included in the tree.')
 
     return rownum, chunknum
 
 
 def _chunk_num(subhaloid):
     if np.isscalar(subhaloid):
-        return  subhaloid // _sl_chunk_const
+        return subhaloid // _sl_chunk_const
     return subhaloid[0] // _sl_chunk_const
 
 
 def _row_in_chunk(subhaloid, sim):
     chunknum = _chunk_num(subhaloid)
-    sim.load_by_file('SubLink', chunknum, fields = ['SubhaloID'])
-    rownum = np.searchsorted(sim.loaded['SubLink' + str(chunknum)]\
+    sim.load_by_file('SubLink', chunknum, fields=['SubhaloID'])
+    rownum = np.searchsorted(sim.loaded['SubLink' + str(chunknum)]
                                        ['SubhaloID'],
                              subhaloid)
     return rownum, chunknum
@@ -178,7 +190,7 @@ def subfind_id(subhaloid, sim, internal=False):
     else:
         rownum, chunknum = row_in_chunk(subhaloid, sim)
     sim.load_by_file('SubLink', chunknum,
-                  fields = ['SubfindID', 'SnapNum'])
+                     fields=['SubfindID', 'SnapNum'])
     subfindid = sim.loaded['SubLink' + str(chunknum)]['SubfindID'][rownum]
     snapnum = sim.loaded['SubLink' + str(chunknum)]['SnapNum'][rownum]
 
@@ -215,9 +227,9 @@ def subfind_central(groupnum, snapnum, sim):
     if not np.isscalar(snapnum):
         raise TypeError('The input snapnum should be one number.')
 
-    sim.load_by_file('Group', snapnum, fields = ['GroupFirstSub'])
+    sim.load_by_file('Group', snapnum, fields=['GroupFirstSub'])
     central = sim.loaded['Group'
-                            + str(snapnum)]['GroupFirstSub'][groupnum]
+                         + str(snapnum)]['GroupFirstSub'][groupnum]
 
     return central
 
@@ -229,9 +241,9 @@ def sublink_central(groupnum, snapnum, sim):
                             snapnum, sim)
     rownum, chunknum = row_in_chunk(subfindcen, sim)
     sim.load_by_file('SubLink', chunknum,
-                     fields = ['FirstSubhaloInFOFGroupID'])
-    sublinkcen = sim.loaded['SubLink' + str(chunknum)]\
-                           ['FirstSubhaloInFOFGroupID'][rownum]
+                     fields=['FirstSubhaloInFOFGroupID'])
+    sublinkcen = (sim.loaded['SubLink' + str(chunknum)]
+                            ['FirstSubhaloInFOFGroupID'][rownum])
 
     return sublinkcen
 
@@ -271,7 +283,7 @@ def group_num(subhaloid, sim, internal=False):
     else:
         rownum, chunknum = row_in_chunk(subhaloid, sim)
     sim.load_by_file('SubLink', chunknum,
-                     fields = ['SubhaloGrNr', 'SnapNum'])
+                     fields=['SubhaloGrNr', 'SnapNum'])
     groupnum = sim.loaded['SubLink' + str(chunknum)]['SubhaloGrNr'][rownum]
     snapnum = sim.loaded['SubLink' + str(chunknum)]['SnapNum'][rownum]
 
@@ -280,7 +292,7 @@ def group_num(subhaloid, sim, internal=False):
 
 def is_subfind_central(subhaloid, sim):
     """ Checks whether a subhalo is the subhalo with the highest instantaneous
-    mass in its host FOF group. This is the same as the the central subhalo
+    mass in its host FOF group. This is the same as the central subhalo
     identified by SubFind in the column `GroupFirstSub`.
 
 
@@ -304,7 +316,7 @@ def is_subfind_central(subhaloid, sim):
 
     rownum, chunknum = row_in_chunk(subhaloid, sim)
     sim.load_by_file('SubLink', chunknum,
-                     fields = ['SubfindID', 'GroupFirstSub'])
+                     fields=['SubfindID', 'GroupFirstSub'])
     subfindid = sim.loaded['SubLink' + str(chunknum)]['SubfindID'][rownum]
     subfindcen = sim.loaded['SubLink' + str(chunknum)]['GroupFirstSub'][rownum]
 
@@ -313,7 +325,7 @@ def is_subfind_central(subhaloid, sim):
 
 def is_sublink_central(subhaloid, sim):
     """ Checks whether a subhalo is the subhalo with the highest mass history
-    in its host FOF group. This is the same as the the central subhalo
+    in its host FOF group. This is the same as the central subhalo
     identified by SubLink in the column `FirstSubhaloInFOFGroupID`.
 
 
@@ -336,9 +348,9 @@ def is_sublink_central(subhaloid, sim):
     """
     rownum, chunknum = row_in_chunk(subhaloid, sim)
     sim.load_by_file('SubLink', chunknum,
-                     fields = ['SubhaloID', 'FirstSubhaloInFOFGroupID'])
+                     fields=['SubhaloID', 'FirstSubhaloInFOFGroupID'])
     subhaloid = sim.loaded['SubLink' + str(chunknum)]['SubhaloID'][rownum]
-    sublinkcen = sim.loaded['SubLink' + str(chunknum)]\
-                           ['FirstSubhaloInFOFGroupID'][rownum]
+    sublinkcen = (sim.loaded['SubLink' + str(chunknum)]
+                            ['FirstSubhaloInFOFGroupID'][rownum])
 
     return subhaloid == sublinkcen

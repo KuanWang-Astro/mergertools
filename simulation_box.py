@@ -11,7 +11,9 @@ from packaging import version
 import gc
 
 assert version.parse(h5py.__version__) >= version.parse('2.9'), \
-'h5py>=2.9.x is needed'
+    'h5py>=2.9.x is needed'
+
+
 # require h5py>=2.9.x for simulation.hdf5.
 # use simulation.hdf5 for GroupFirstSub, but still use separate chunks for
 # tree, to speed up searches.
@@ -22,14 +24,14 @@ class SimulationBox:
 
     """
 
-    def __init__(self, Lbox, resolution, dark, basepath):
+    def __init__(self, boxsize, resolution, dark, basepath):
         """ Initializes the class with simulation box information, and
         checks whether the box exists.
 
         Parameters
         ----------
 
-        Lbox : int
+        boxsize : int
           The box size in Mpc, should be one of 50, 100 and 300.
 
         resolution : int
@@ -45,19 +47,19 @@ class SimulationBox:
 
         """
 
-        self.res_dict = {50:  [1, 2, 3, 4],
+        self.res_dict = {50: [1, 2, 3, 4],
                          100: [1, 2, 3],
                          300: [1, 2, 3]}
 
-        if Lbox not in [50, 100, 300]:
-            raise ValueError('Unknown box size: {}. '.format(Lbox) +
+        if boxsize not in [50, 100, 300]:
+            raise ValueError('Unknown box size: {}. '.format(boxsize) +
                              'Choose from 50, 100, 300.')
-        if resolution not in self.res_dict[Lbox]:
+        if resolution not in self.res_dict[boxsize]:
             raise ValueError('Unknown resolution for box size ' +
                              '{}: {}. Choose from {}.'.format(
-                             Lbox, resolution, self.res_dict[Lbox]))
+                                 boxsize, resolution, self.res_dict[boxsize]))
 
-        self.Lbox = Lbox
+        self.Lbox = boxsize
         self.resolution = resolution
         self.dark = dark
         self.basepath = basepath
@@ -74,7 +76,6 @@ class SimulationBox:
                                     'Group_M_TopHat200', 'GroupMass',
                                     'GroupPos', 'SubhaloMass'],
                         'Group': ['GroupFirstSub']}
-
 
     def data_path(self, catalog, filenum):
         """ Constructs the path to a data file for the specified catalog
@@ -98,10 +99,6 @@ class SimulationBox:
         fpath : str
           The file path to the data that needs to be loaded.
 
-        Notes
-        -----
-        This version is specific to my data organization on greatlakes.
-
         """
 
         if catalog not in ['SubLinkOffsets', 'SubLink', 'Group']:
@@ -115,32 +112,31 @@ class SimulationBox:
 
         fn_dict = {'SubLinkOffsets': 'offsets_{}.hdf5',
                    'SubLink': 'tree_extended.{}.hdf5',
-                   'Group': 'host_sub{}.npy'}
+                   'Group': 'simulation.hdf5'}
 
-        dir_dict = {'SubLinkOffsets': 'Offsets',
-                   'SubLink': 'SubLink',
-                   'Group': 'GroupFirstSub'}
+        dir_dict = {'SubLinkOffsets': '/postprocessing/offsets/',
+                    'SubLink': '/postprocessing/trees/SubLink/',
+                    'Group': '/'}
 
         if self.dark:
             fpath = os.path.join(
                 self.basepath,
-                'TNG{}-{}-Dark_{}'.format(self.Lbox,
-                                          self.resolution),
-                                          dir_dict[catalog],
+                'TNG{}-{}-Dark{}'.format(self.Lbox,
+                                         self.resolution,
+                                         dir_dict[catalog]),
                 fn_dict[catalog].format(num))
         else:
             fpath = os.path.join(
                 self.basepath,
-                'TNG{}-{}_{}'.format(self.Lbox,
-                                     self.resolution,
-                                     dir_dict[catalog]),
+                'TNG{}-{}{}'.format(self.Lbox,
+                                    self.resolution,
+                                    dir_dict[catalog]),
                 fn_dict[catalog].format(num))
 
         if os.path.isfile(fpath):
             return fpath
 
         raise OSError('Invalid file path: {}'.format(fpath))
-
 
     def load_by_file(self, catalog, filenum, fields=None):
         """ Loads a data catalog into a dictionary, where keys are consistent
@@ -187,7 +183,7 @@ class SimulationBox:
         if catalog + str(filenum) in self.loaded:
             existing = set(self.loaded[catalog + str(filenum)].keys())
             fields = list(set(fields) - existing)
-            if not fields: # all columns already loaded
+            if not fields:  # all columns already loaded
                 return
         else:
             self.loaded[catalog + str(filenum)] = {}
@@ -195,10 +191,11 @@ class SimulationBox:
         path = self.data_path(catalog, filenum)
 
         if catalog == 'Group':
-            if fields != ['GroupFirstSub']:
-                print('Only the `GroupFirstSub` column is availbale.')
-            arr = np.load(path)
-            arr_dict = {'GroupFirstSub': arr}
+            arr_dict = {}
+            with h5py.File(path, 'r') as f:
+                for field in fields:
+                    arr_dict[field] = np.array(f['Groups/{}/Group/'.
+                                               format(filenum) + field])
 
         else:
             arr_dict = {}
@@ -212,11 +209,10 @@ class SimulationBox:
                         arr_dict[field] = np.array(f[field])
 
         self.loaded[catalog + str(filenum)] = {
-                    **self.loaded[catalog + str(filenum)],
-                    **arr_dict}
+            **self.loaded[catalog + str(filenum)],
+            **arr_dict}
 
         return
-
 
     def clear_loaded(self, keep_catalogs=None):
         """ Deletes part or all of the loaded catalogs to release memory.
@@ -236,7 +232,7 @@ class SimulationBox:
 
         if isinstance(keep_catalogs, str):
             keep_catalogs = [keep_catalogs]
-            
+
         if keep_catalogs:
             self.loaded = {k: self.loaded[k] for k in keep_catalogs}
         else:

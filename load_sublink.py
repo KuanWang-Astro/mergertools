@@ -7,6 +7,7 @@ import numpy as np
 
 import locate_object
 
+
 def load_single_subhalo(subhaloid, fields, sim, internal=False):
     """ Loads specified columns in the SubLink catalog for a given subhalo.
 
@@ -47,10 +48,9 @@ def load_single_subhalo(subhaloid, fields, sim, internal=False):
     catkey = 'SubLink' + str(chunknum)
     sim.load_by_file('SubLink', chunknum, fields)
 
-    subhalo = {}
-    subhalo['Number'] = len(subhaloid)
-    subhalo['ChunkNumber'] = chunknum
-    subhalo['IndexInChunk'] = rownum
+    subhalo = {'Number': len(subhaloid),
+               'ChunkNumber': chunknum,
+               'IndexInChunk': rownum}
     for field in fields:
         subhalo[field] = sim.loaded[catkey][field][rownum]
 
@@ -108,8 +108,8 @@ def walk_tree(subhaloid, fields, sim, pointer, numlimit=0):
                          'Choose from {}.'.format(iter_pointers +
                                                   noniter_pointers))
 
-    fields_ = list(set(fields).union(set([pointer, 'SubhaloID'])))
-    subhalo = load_single_subhalo(subhaloid, fields_, sim, internal = True)
+    fields_ = list(set(fields).union({pointer, 'SubhaloID'}))
+    subhalo = load_single_subhalo(subhaloid, fields_, sim, internal=True)
     chunknum = subhalo['ChunkNumber']
     rownum = subhalo['IndexInChunk'][0]
     catkey = 'SubLink' + str(chunknum)
@@ -123,7 +123,6 @@ def walk_tree(subhaloid, fields, sim, pointer, numlimit=0):
         if jump != 0:
             head_row += jump
             idx.append(head_row)
-            head = sim.loaded[catkey][pointer][head_row]
 
     else:
         while True:
@@ -135,10 +134,9 @@ def walk_tree(subhaloid, fields, sim, pointer, numlimit=0):
             if numlimit and len(idx) == numlimit:
                 break
             head = sim.loaded[catkey]['SubhaloID'][head_row]
-    chain = {}
-    chain['Number'] = len(idx)
-    chain['ChunkNumber'] = chunknum
-    chain['IndexInChunk'] = np.array(idx)
+    chain = {'Number': len(idx),
+             'ChunkNumber': chunknum,
+             'IndexInChunk': np.array(idx)}
     for field in fields:
         chain[field] = sim.loaded[catkey][field][idx]
     return chain
@@ -162,6 +160,11 @@ def load_group_subhalos(subhaloid, fields, sim, numlimit=0):
       Instance of the simulation_box.SimulationBox class, which specifies
       the simulation box to work with.
 
+    numlimit : int, optional
+      The maximum number of subhalos to load in the group, including the
+      first subhalo. Default is 0, in which case the function loads all
+      the subhalos in the group.
+
     Returns
     -------
     groupsubs : dict
@@ -177,12 +180,12 @@ def load_group_subhalos(subhaloid, fields, sim, numlimit=0):
     if not np.isscalar(subhaloid):
         raise TypeError('Process one subhalo at a time.')
 
-    fields_ = list(set(fields).union(set(['SubhaloID'])))
+    fields_ = list(set(fields).union({'SubhaloID'}))
     primary_subhaloid = walk_tree(subhaloid, fields_, sim,
                                   'FirstSubhaloInFOFGroupID')['SubhaloID'][-1]
 
     groupsubs = walk_tree(primary_subhaloid, fields, sim,
-                          'NextSubhaloInFOFGroupID', numlimit = numlimit)
+                          'NextSubhaloInFOFGroupID', numlimit=numlimit)
 
     return groupsubs
 
@@ -219,17 +222,16 @@ def load_immediate_progenitors(subhaloid, fields, sim):
     if not np.isscalar(subhaloid):
         raise TypeError('Process one subhalo at a time.')
 
-    fields_ = list(set(fields).union(set(['SubhaloID'])))
+    fields_ = list(set(fields).union({'SubhaloID'}))
     firstprogenitor = walk_tree(subhaloid, fields_, sim,
-                                'FirstProgenitorID', numlimit = 2)
+                                'FirstProgenitorID', numlimit=2)
     if firstprogenitor['SubhaloID'][-1] == subhaloid:
-        immediate_progenitors = {}
-        immediate_progenitors['Number'] = 0
-        immediate_progenitors['ChunkNumber'] = firstprogenitor['ChunkNumber']
-        immediate_progenitors['IndexInChunk'] = np.array([], dtype = 'int64')
+        immediate_progenitors = {'Number': 0,
+                                 'ChunkNumber': firstprogenitor['ChunkNumber'],
+                                 'IndexInChunk': np.array([], dtype='int64')}
         for field in fields:
             immediate_progenitors[field] = np.array([],
-                  dtype = firstprogenitor[field].dtype)
+                                                    dtype=firstprogenitor[field].dtype)
         return immediate_progenitors
 
     immediate_progenitors = walk_tree(firstprogenitor['SubhaloID'][-1],
@@ -270,23 +272,21 @@ def load_immediate_descendant(subhaloid, fields, sim):
     if not np.isscalar(subhaloid):
         raise TypeError('Process one subhalo at a time.')
 
-    fields_ = list(set(fields).union(set(['SubhaloID'])))
+    fields_ = list(set(fields).union({'SubhaloID'}))
     descendant = walk_tree(subhaloid, fields_, sim,
-                           'DescendantID', numlimit = 2)
+                           'DescendantID', numlimit=2)
     if descendant['SubhaloID'][-1] == subhaloid:
-        immediate_descendant = {}
-        immediate_descendant['Number'] = 0
-        immediate_descendant['ChunkNumber'] = descendant['ChunkNumber']
-        immediate_descendant['IndexInChunk'] = np.array([], dtype = 'int64')
+        immediate_descendant = {'Number': 0,
+                                'ChunkNumber': descendant['ChunkNumber'],
+                                'IndexInChunk': np.array([], dtype='int64')}
         for field in fields:
             immediate_descendant[field] = np.array([],
-                      dtype = descendant[field].dtype)
+                                                   dtype=descendant[field].dtype)
         return immediate_descendant
 
-    immediate_descendant = {}
-    immediate_descendant['Number'] = 1
-    immediate_descendant['ChunkNumber'] = descendant['ChunkNumber']
-    immediate_descendant['IndexInChunk'] = descendant['IndexInChunk'][1:]
+    immediate_descendant = {'Number': 1,
+                            'ChunkNumber': descendant['ChunkNumber'],
+                            'IndexInChunk': descendant['IndexInChunk'][1:]}
     for field in fields:
         immediate_descendant[field] = descendant[field][1:]
 
@@ -330,10 +330,8 @@ def load_tree_progenitors(subhaloid, fields, sim, main_branch_only=False):
     if not np.isscalar(subhaloid):
         raise TypeError('Process one subhalo at a time.')
 
-    fields_ = list(set(fields).union(set(['MainLeafProgenitorID',
-                                          'LastProgenitorID',
-                                          'SubhaloID'])))
-    subhalo = load_single_subhalo(subhaloid, fields_, sim, internal = True)
+    fields_ = list(set(fields).union({'MainLeafProgenitorID', 'LastProgenitorID', 'SubhaloID'}))
+    subhalo = load_single_subhalo(subhaloid, fields_, sim, internal=True)
     chunknum = subhalo['ChunkNumber']
     rownum = subhalo['IndexInChunk'][0]
     catkey = 'SubLink' + str(chunknum)
@@ -346,13 +344,13 @@ def load_tree_progenitors(subhaloid, fields, sim, main_branch_only=False):
         end = rownum + (subhalo['LastProgenitorID'][0] -
                         subhalo['SubhaloID'][0])
 
-    progenitors = {}
-    progenitors['Number'] = end - start + 1
-    progenitors['ChunkNumber'] = chunknum
-    progenitors['IndexInChunk'] = np.arange(start, end + 1)
+    progenitors = {'Number': end - start + 1,
+                   'ChunkNumber': chunknum,
+                   'IndexInChunk': np.arange(start, end + 1)}
     for field in fields:
-        progenitors[field] = sim.loaded[catkey][field][start : end + 1]
+        progenitors[field] = sim.loaded[catkey][field][start:end + 1]
     return progenitors
+
 
 def subhalo_peak_mass(subhaloid, sim):
     """ Finds the peak SubhaloMass along the main branch of the given subhalo,
@@ -363,7 +361,6 @@ def subhalo_peak_mass(subhaloid, sim):
     progenitors = load_tree_progenitors(subhaloid, ['SubhaloMass'], sim,
                                         main_branch_only=True)
     return np.max(progenitors['SubhaloMass'])
-
 
 
 def load_tree_descendants(subhaloid, fields, sim, main_branch_only=True):
@@ -412,8 +409,8 @@ def load_tree_descendants(subhaloid, fields, sim, main_branch_only=True):
         if np.any(not_main_branch):
             truncate = np.where(not_main_branch)[0][0]
             descendants['Number'] = truncate + 1
-            descendants['IndexInChunk'] = descendants['IndexInChunk']\
-                                                     [:truncate + 1]
+            descendants['IndexInChunk'] = (descendants['IndexInChunk']
+                                                      [:truncate + 1])
             for field in fields:
                 descendants[field] = descendants[field][:truncate + 1]
 
@@ -435,7 +432,7 @@ def merge_tree_dicts(trees, fields):
 
     field = 'IndexInChunk'
     idx = np.concatenate([tree[field] for tree in trees])
-    mask = np.unique(idx, return_index = True)[1]
+    mask = np.unique(idx, return_index=True)[1]
     merged_tree['Number'] = len(mask)
     merged_tree['ChunkNumber'] = cn[0]
     merged_tree[field] = idx[mask]
@@ -456,7 +453,7 @@ def load_entire_tree(subhaloid, fields, sim,
     """
 
     return merge_tree_dicts([load_tree_progenitors(subhaloid, fields, sim,
-                                              progenitor_main_branch_only),
+                                                   progenitor_main_branch_only),
                              load_tree_descendants(subhaloid, fields, sim,
-                                              descendant_main_branch_only)],
-                            fields = fields)
+                                                   descendant_main_branch_only)],
+                            fields=fields)
