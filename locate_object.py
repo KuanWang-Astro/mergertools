@@ -235,7 +235,31 @@ def subfind_central(groupnum, snapnum, sim):
 
 
 def sublink_central(groupnum, snapnum, sim):
-    """
+    """ Finds the SubhaloID of the subhalo with the most massive history
+        in a given FOF group. Processes any number of groups in the same
+        snapshot.
+
+    Parameters
+    ----------
+    groupnum : int or array_like
+      The group number(s) to find the primary subhalo(s) for. Group number
+      is the index of the FOF group in the group catalog. The group number
+      is only unique within each snapshot and not throughout the history.
+
+    snapnum : int
+      The snapshot number that contains the group(s). Should be one number.
+
+    sim : class obj
+      Instance of the simulation_box.SimulationBox class, which specifies
+      the simulation box to work with.
+
+    Returns
+    -------
+    sublinkcen : int or array_like
+      The SubhaloID(s) of primary subhalo(s) identified by SubLink, with
+      the most massive history, of the given groups. Has same shape as the
+      input groupnum. The SublinkID is unique throughout the history.
+
     """
     subfindcen = sublink_id(subfind_central(groupnum, snapnum, sim),
                             snapnum, sim)
@@ -295,7 +319,6 @@ def is_subfind_central(subhaloid, sim):
     mass in its host FOF group. This is the same as the central subhalo
     identified by SubFind in the column `GroupFirstSub`.
 
-
     Parameters
     ----------
     subhaloid : int or array_like
@@ -327,7 +350,6 @@ def is_sublink_central(subhaloid, sim):
     """ Checks whether a subhalo is the subhalo with the highest mass history
     in its host FOF group. This is the same as the central subhalo
     identified by SubLink in the column `FirstSubhaloInFOFGroupID`.
-
 
     Parameters
     ----------

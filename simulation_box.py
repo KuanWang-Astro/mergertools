@@ -45,6 +45,11 @@ class SimulationBox:
         basepath : str
           The base path where all data are stored.
 
+        Returns
+        -------
+        None :
+          Initializes the class object with input arguments.
+
         """
 
         self.res_dict = {50: [1, 2, 3, 4],
@@ -167,11 +172,6 @@ class SimulationBox:
           numpy arrays. Appends result to the self.loaded dictionary
           with the input catalog and filenum as key.
 
-
-        Notes
-        -----
-        This version is specific to my data organization on greatlakes.
-
         """
 
         if fields is None:
@@ -226,7 +226,8 @@ class SimulationBox:
 
         Returns
         -------
-        None
+        None :
+          Clears the loaded files to release memory.
 
         """
 

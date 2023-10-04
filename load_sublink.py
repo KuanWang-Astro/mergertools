@@ -356,6 +356,22 @@ def subhalo_peak_mass(subhaloid, sim):
     """ Finds the peak SubhaloMass along the main branch of the given subhalo,
     up to the snapshot of the given subhalo.
 
+    Parameters
+    ----------
+    subhaloid : int
+      The SubhaloID of the subhalo whose descendants to load. SubhaloID is
+      the ID assigned by SubLink and is unique throughout all snapshots.
+
+    sim : class obj
+      Instance of the simulation_box.SimulationBox class, which specifies
+      the simulation box to work with.
+
+    Returns
+    -------
+    peakmass : float
+      The peak SubhaloMass along the main branch of the given subhalo, up
+      to the snapshot of the given subhalo, in units of 10^10Msun/h.
+
     """
 
     progenitors = load_tree_progenitors(subhaloid, ['SubhaloMass'], sim,
@@ -422,6 +438,21 @@ def merge_tree_dicts(trees, fields):
     same fields. If a subhalo appears multiple times, only one occurrence is
     kept.
 
+    Parameters
+    ----------
+    trees : list of dict
+      The trees to merge into one tree. For instance, the progenitor tree and
+      the descendant tree of a subhalo.
+
+    fields : list of str
+      The columns to keep in the merged tree.
+
+    Returns
+    -------
+    merged_tree : dict
+        Dictionary merged from given tree dictionaries, with the specified
+        fields. Subhalos are sorted by SubhaloID.
+
     """
 
     merged_tree = {}
@@ -447,8 +478,45 @@ def merge_tree_dicts(trees, fields):
 def load_entire_tree(subhaloid, fields, sim,
                      progenitor_main_branch_only=False,
                      descendant_main_branch_only=True):
-    """ wrapper around `merge_tree_dicts`, `load_tree_progenitors`, and
-    `load_tree_descendants`. sorted by SubhaloID.
+    """ Loads specified columns in the SubLink catalog for the progenitors
+    and descendants of the given subhalo.
+
+    Parameters
+    ----------
+    subhaloid : int
+      The SubhaloID of the subhalo whose tree to load. SubhaloID is the
+      ID assigned by SubLink and is unique throughout all snapshots.
+
+    fields : list of str
+      The columns to load from the table.
+
+    sim : class obj
+      Instance of the simulation_box.SimulationBox class, which specifies
+      the simulation box to work with.
+
+    progenitor_main_branch_only : bool, optional
+      If True, only load main branch progenitors of the given subhalo, if
+      False, load all progenitors. Default is False.
+
+    descendant_main_branch_only : bool, optional
+      Each subhalo has at most one immediate descendant, but a subhalo is
+      not necessarily the main branch progenitor of its descendant. If True,
+      only load descendants for which the input subhalo is a main branch
+      progenitor. If False, load all descendants. Default is True.
+
+    Returns
+    -------
+    entire_tree : dict
+        Dictionary containing the specified fields for the progenitors and
+        descendants of the given subhalo, including itself. Entries are stored
+        as numpy arrays. Also includes the number of subhalos, the SubLink
+        chunk number in which the subhalos are stored, and the row indices
+        of the loaded subhalos in the chunk. Subhalos are sorted by SubhaloID.
+
+    Notes
+    -----
+    A wrapper around `merge_tree_dicts`, `load_tree_progenitors`, and
+    `load_tree_descendants`.
 
     """
 
