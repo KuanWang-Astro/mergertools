@@ -24,19 +24,6 @@ This package
 
 # Statement of need
 
- [@astropy] 
-
-# Mathematics
-
-
-
-# Citations
-
-
-- `@author:2001`  ->  "Author et al. (2001)"
-- `[@author:2001]` -> "(Author et al., 2001)"
-- `[@author1:2001; @author2:2001]` -> "(Author1 et al., 2001; Author2 et al., 2002)"
-
 
 
 # Acknowledgements
